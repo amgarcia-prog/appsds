@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import SelectorCiudad from '../ui/SelectorCiudad'
+import API_URL from '../../config.js'
 
 const TIPOS_IDENTIFICACION = [
   'Tarjeta de identidad',
@@ -78,7 +79,7 @@ export default function DetalleRegistro({ registro, onVolver }) {
   useEffect(() => {
     const ciudad = datos.ciudad_donde_sirve
     if (!ciudad) { setPuntosDisponibles([]); return }
-    fetch(`http://localhost:3001/api/puntos-servicio?ciudad=${encodeURIComponent(ciudad)}`)
+    fetch(`${API_URL}/api/puntos-servicio?ciudad=${encodeURIComponent(ciudad)}`)
       .then(r => r.json())
       .then(data => setPuntosDisponibles(data.map(p => p.nombre)))
       .catch(() => setPuntosDisponibles([]))
@@ -95,7 +96,7 @@ export default function DetalleRegistro({ registro, onVolver }) {
   const guardar = async () => {
     setGuardando(true)
     try {
-      const res = await fetch(`http://localhost:3001/api/admin/registros/${datos.id}`, {
+      const res = await fetch(`${API_URL}/api/admin/registros/${datos.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': 'SDS2026admin' },
         body: JSON.stringify(datos),
@@ -112,7 +113,7 @@ export default function DetalleRegistro({ registro, onVolver }) {
 
   const eliminar = async () => {
     try {
-      const res = await fetch(`http://localhost:3001/api/admin/registros/${datos.id}`, {
+      const res = await fetch(`${API_URL}/api/admin/registros/${datos.id}`, {
         method: 'DELETE',
         headers: { 'x-admin-key': 'SDS2026admin' },
       })

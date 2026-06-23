@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import logo from '../assets/logo servidores.jpg'
+import API_URL from '../config.js'
 import Seccion1DatosPersonales from './secciones/Seccion1DatosPersonales'
 import Seccion2Contacto from './secciones/Seccion2Contacto'
 import Seccion3AcademicaLaboral from './secciones/Seccion3AcademicaLaboral'
@@ -112,7 +113,7 @@ export default function RegistroForm() {
 
   const handleSubmit = async () => {
     try {
-      const respuesta = await fetch('http://localhost:3001/api/registro', {
+      const respuesta = await fetch('${API_URL}/api/registro', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos),

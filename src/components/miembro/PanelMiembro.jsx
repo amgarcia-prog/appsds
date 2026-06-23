@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import logo from '../../assets/logo servidores.jpg'
 import SelectorCiudad from '../ui/SelectorCiudad'
+import API_URL from '../../config.js'
 
 const PAISES = [
   'Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica',
@@ -91,7 +92,7 @@ export default function PanelMiembro() {
   const cargar = async () => {
     setCargando(true)
     try {
-      const res = await fetch('http://localhost:3001/api/miembro/perfil', {
+      const res = await fetch('${API_URL}/api/miembro/perfil', {
         headers: { 'x-miembro-id': sesion.id }
       })
       const data = await res.json()
@@ -107,7 +108,7 @@ export default function PanelMiembro() {
     if (Object.keys(editados).length === 0) return
     setGuardando(true)
     try {
-      const res = await fetch('http://localhost:3001/api/miembro/perfil', {
+      const res = await fetch('${API_URL}/api/miembro/perfil', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-miembro-id': sesion.id },
         body: JSON.stringify(editados),
@@ -161,7 +162,7 @@ export default function PanelMiembro() {
       formData.append('archivo', archivo)
       formData.append('bucket', 'fotos-miembros')
       formData.append('carpeta', 'perfil')
-      const res = await fetch('http://localhost:3001/api/upload', { method: 'POST', body: formData })
+      const res = await fetch('${API_URL}/api/upload', { method: 'POST', body: formData })
       const data = await res.json()
       if (data.ok) actualizar('foto_url', data.url)
     } catch { }
@@ -176,7 +177,7 @@ export default function PanelMiembro() {
     if (!motivacion.trim()) return
     setEnviandoSolicitud(true)
     try {
-      const res = await fetch('http://localhost:3001/api/miembro/solicitar-consagracion', {
+      const res = await fetch('${API_URL}/api/miembro/solicitar-consagracion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-miembro-id': sesion.id },
         body: JSON.stringify({ motivacion }),

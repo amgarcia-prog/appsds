@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import logo from '../../assets/logo servidores.jpg'
+import API_URL from '../../config.js'
 import DetalleRegistro from './DetalleRegistro'
 import BusquedaAvanzada from './BusquedaAvanzada'
 import PuntosServicio from './PuntosServicio'
@@ -73,8 +74,8 @@ export default function PanelAdmin() {
     setCargando(true)
     try {
       const [resRegistros, resJunta] = await Promise.all([
-        fetch('http://localhost:3001/api/admin/registros', { headers: { 'x-admin-key': 'SDS2026admin' } }),
-        fetch('http://localhost:3001/api/junta/pendientes', { headers: { 'x-admin-key': 'SDS2026admin' } }),
+        fetch('${API_URL}/api/admin/registros', { headers: { 'x-admin-key': 'SDS2026admin' } }),
+        fetch('${API_URL}/api/junta/pendientes', { headers: { 'x-admin-key': 'SDS2026admin' } }),
       ])
       const data = await resRegistros.json()
       const junta = await resJunta.json()

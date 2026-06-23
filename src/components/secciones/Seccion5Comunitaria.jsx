@@ -3,6 +3,7 @@ import CampoObligatorio from '../ui/CampoObligatorio'
 import BotonSiguiente from '../ui/BotonSiguiente'
 import BotonAnterior from '../ui/BotonAnterior'
 import SelectorCiudad from '../ui/SelectorCiudad'
+import API_URL from '../../config.js'
 
 const COMO_LLEGO = ['Redes sociales', 'Invitación Directa', 'Vi a los servidores y me acerqué', 'Otro']
 
@@ -26,7 +27,7 @@ export default function Seccion5Comunitaria({ datos, actualizar, siguiente, ante
   const cargarPuntos = async () => {
     setCargando(true)
     try {
-      const res = await fetch(`http://localhost:3001/api/puntos-servicio?ciudad=${encodeURIComponent(datos.ciudadDondeSirve)}`)
+      const res = await fetch(`${API_URL}/api/puntos-servicio?ciudad=${encodeURIComponent(datos.ciudadDondeSirve)}`)
       const data = await res.json()
       setPuntosBD(data)
     } catch (e) {

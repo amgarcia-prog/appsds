@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import * as XLSX from 'xlsx'
+import API_URL from '../../config.js'
 
 const ESTADOS_LABELS = {
   pendiente_formacion: 'Pendiente por formación',
@@ -100,7 +101,7 @@ export default function BusquedaAvanzada() {
   const [puntosBD, setPuntosBD] = useState([])
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/admin/registros', {
+    fetch('${API_URL}/api/admin/registros', {
       headers: { 'x-admin-key': 'SDS2026admin' }
     })
       .then(r => r.json())
@@ -112,7 +113,7 @@ export default function BusquedaAvanzada() {
       })
       .catch(() => setCargando(false))
 
-    fetch('http://localhost:3001/api/admin/puntos-servicio', {
+    fetch('${API_URL}/api/admin/puntos-servicio', {
       headers: { 'x-admin-key': 'SDS2026admin' }
     })
       .then(r => r.json())

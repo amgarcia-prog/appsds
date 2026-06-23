@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import logo from '../../assets/logo servidores.jpg'
+import API_URL from '../../config.js'
 
 export default function LoginMiembro() {
   const [numeroIdentificacion, setNumeroIdentificacion] = useState('')
@@ -14,7 +15,7 @@ export default function LoginMiembro() {
     setCargando(true)
     setError('')
     try {
-      const res = await fetch('http://localhost:3001/api/login', {
+      const res = await fetch('${API_URL}/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ numeroIdentificacion, clave }),

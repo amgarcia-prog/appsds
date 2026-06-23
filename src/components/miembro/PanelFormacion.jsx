@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import logo from '../../assets/logo servidores.jpg'
+import API_URL from '../../config.js'
 
 export default function PanelFormacion() {
   const [pendientes, setPendientes] = useState([])
@@ -29,10 +30,10 @@ export default function PanelFormacion() {
     setCargando(true)
     try {
       const [r1, r2, r3, r4] = await Promise.all([
-        fetch(`http://localhost:3001/api/formacion/pendientes?ciudad=${encodeURIComponent(sesion.ciudad)}`).then(r => r.json()),
-        fetch(`http://localhost:3001/api/formacion/cumple-requisitos?ciudad=${encodeURIComponent(sesion.ciudad)}`).then(r => r.json()),
-        fetch(`http://localhost:3001/api/formacion/aprobados-formacion?ciudad=${encodeURIComponent(sesion.ciudad)}`).then(r => r.json()),
-        fetch(`http://localhost:3001/api/formacion/aprobados-consagracion?ciudad=${encodeURIComponent(sesion.ciudad)}`).then(r => r.json()),
+        fetch(`${API_URL}/api/formacion/pendientes?ciudad=${encodeURIComponent(sesion.ciudad)}`).then(r => r.json()),
+        fetch(`${API_URL}/api/formacion/cumple-requisitos?ciudad=${encodeURIComponent(sesion.ciudad)}`).then(r => r.json()),
+        fetch(`${API_URL}/api/formacion/aprobados-formacion?ciudad=${encodeURIComponent(sesion.ciudad)}`).then(r => r.json()),
+        fetch(`${API_URL}/api/formacion/aprobados-consagracion?ciudad=${encodeURIComponent(sesion.ciudad)}`).then(r => r.json()),
       ])
       setPendientes(r1)
       setCumpleRequisitos(r2)
@@ -64,7 +65,7 @@ export default function PanelFormacion() {
     try {
       const body = { estado }
       if (conceptoFormacion !== undefined) body.concepto_formacion = conceptoFormacion
-      const res = await fetch(`http://localhost:3001/api/formacion/estado/${id}`, {
+      const res = await fetch(`${API_URL}/api/formacion/estado/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-miembro-id': sesion.id },
         body: JSON.stringify(body),
@@ -105,7 +106,7 @@ export default function PanelFormacion() {
       formData.append('archivo', archivo)
       formData.append('bucket', 'actas-consagracion')
       formData.append('carpeta', sesion.ciudad || 'general')
-      const res = await fetch('http://localhost:3001/api/upload', { method: 'POST', body: formData })
+      const res = await fetch('${API_URL}/api/upload', { method: 'POST', body: formData })
       const data = await res.json()
       if (data.ok) setActaUrl(data.url)
     } catch (e) { console.error(e) }
@@ -118,7 +119,7 @@ export default function PanelFormacion() {
     if (!actaUrl) { setMensaje('❌ El acta firmada de consagración es obligatoria'); setTimeout(() => setMensaje(''), 3000); return }
     setGuardando(true)
     try {
-      const res = await fetch('http://localhost:3001/api/formacion/consagrar-pacientes', {
+      const res = await fetch('${API_URL}/api/formacion/consagrar-pacientes', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-miembro-id': sesion.id },
         body: JSON.stringify({ ids: seleccionadosConsagracion, fecha_consagracion: fechaCeremonia, acta_url: actaUrl }),
@@ -150,7 +151,7 @@ export default function PanelFormacion() {
     if (!fechaReunion) { setMensaje('❌ La fecha de reunión es obligatoria'); setTimeout(() => setMensaje(''), 3000); return }
     setGuardando(true)
     try {
-      const res = await fetch(`http://localhost:3001/api/formacion/concepto-consejo/${id}`, {
+      const res = await fetch(`${API_URL}/api/formacion/concepto-consejo/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-miembro-id': sesion.id },
         body: JSON.stringify({ concepto_consejo: concepto.trim(), fecha_reunion_consejo: fechaReunion, avala }),

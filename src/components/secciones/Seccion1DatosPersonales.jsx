@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import CampoObligatorio from '../ui/CampoObligatorio'
 import BotonSiguiente from '../ui/BotonSiguiente'
+import API_URL from '../../config.js'
 
 const ESTADOS_CIVILES = [
   'Casado por la iglesia', 'Casado por lo civil', 'Casado por ambas',
@@ -62,7 +63,7 @@ export default function Seccion1DatosPersonales({ datos, actualizar, siguiente }
       formData.append('archivo', archivo)
       formData.append('bucket', 'fotos-miembros')
       formData.append('carpeta', 'registro')
-      const res = await fetch('http://localhost:3001/api/upload', { method: 'POST', body: formData })
+      const res = await fetch('${API_URL}/api/upload', { method: 'POST', body: formData })
       const data = await res.json()
       if (data.ok) actualizar({ fotoUrl: data.url })
     } catch (e) { console.error(e) }
@@ -74,7 +75,7 @@ export default function Seccion1DatosPersonales({ datos, actualizar, siguiente }
   const verificarCedula = async (numero) => {
     if (!numero) return
     try {
-      const res = await fetch(`http://localhost:3001/api/verificar-cedula?numero=${encodeURIComponent(numero)}`)
+      const res = await fetch(`${API_URL}/api/verificar-cedula?numero=${encodeURIComponent(numero)}`)
       const data = await res.json()
       setCedulaDuplicada(data.existe)
     } catch (e) {

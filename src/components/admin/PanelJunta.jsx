@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import API_URL from '../../config.js'
 
 export default function PanelJunta() {
   const [aspirantes, setAspirantes] = useState([])
@@ -14,7 +15,7 @@ export default function PanelJunta() {
   const cargar = async () => {
     setCargando(true)
     try {
-      const res = await fetch('http://localhost:3001/api/junta/pendientes', {
+      const res = await fetch('${API_URL}/api/junta/pendientes', {
         headers: { 'x-admin-key': 'SDS2026admin' }
       })
       const data = await res.json()
@@ -43,7 +44,7 @@ export default function PanelJunta() {
   const tomarDecision = async (id, decision) => {
     setGuardando(true)
     try {
-      const res = await fetch(`http://localhost:3001/api/junta/decision/${id}`, {
+      const res = await fetch(`${API_URL}/api/junta/decision/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': 'SDS2026admin' },
         body: JSON.stringify({ decision, notas: notas.trim(), fecha_junta: fechaJunta }),
