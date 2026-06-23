@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import logo from '../assets/logo servidores.jpg'
+import logo from '../assets/logo-servidores.jpg'
 import API_URL from '../config.js'
 import Seccion1DatosPersonales from './secciones/Seccion1DatosPersonales'
 import Seccion2Contacto from './secciones/Seccion2Contacto'

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import logo from '../../assets/logo servidores.jpg'
+import logo from '../../assets/logo-servidores.jpg'
 import SelectorCiudad from '../ui/SelectorCiudad'
 import API_URL from '../../config.js'
 

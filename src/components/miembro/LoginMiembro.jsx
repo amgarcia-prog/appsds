@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import logo from '../../assets/logo servidores.jpg'
+import logo from '../../assets/logo-servidores.jpg'
 import API_URL from '../../config.js'
 
 export default function LoginMiembro() {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import logo from '../../assets/logo servidores.jpg'
+import logo from '../../assets/logo-servidores.jpg'
 import API_URL from '../../config.js'
 import DetalleRegistro from './DetalleRegistro'
 import BusquedaAvanzada from './BusquedaAvanzada'
