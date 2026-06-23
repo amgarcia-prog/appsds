@@ -63,7 +63,7 @@ export default function Seccion1DatosPersonales({ datos, actualizar, siguiente }
       formData.append('archivo', archivo)
       formData.append('bucket', 'fotos-miembros')
       formData.append('carpeta', 'registro')
-      const res = await fetch('${API_URL}/api/upload', { method: 'POST', body: formData })
+      const res = await fetch(`${API_URL}/api/upload`, { method: 'POST', body: formData })
       const data = await res.json()
       if (data.ok) actualizar({ fotoUrl: data.url })
     } catch (e) { console.error(e) }

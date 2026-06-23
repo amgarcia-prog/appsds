@@ -74,8 +74,8 @@ export default function PanelAdmin() {
     setCargando(true)
     try {
       const [resRegistros, resJunta] = await Promise.all([
-        fetch('${API_URL}/api/admin/registros', { headers: { 'x-admin-key': 'SDS2026admin' } }),
-        fetch('${API_URL}/api/junta/pendientes', { headers: { 'x-admin-key': 'SDS2026admin' } }),
+        fetch(`${API_URL}/api/admin/registros', { headers: { 'x-admin-key': 'SDS2026admin' } }),
+        fetch(`${API_URL}/api/junta/pendientes', { headers: { 'x-admin-key': 'SDS2026admin' } }),
       ])
       const data = await resRegistros.json()
       const junta = await resJunta.json()

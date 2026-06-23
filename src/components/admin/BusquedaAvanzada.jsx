@@ -101,7 +101,7 @@ export default function BusquedaAvanzada() {
   const [puntosBD, setPuntosBD] = useState([])
 
   useEffect(() => {
-    fetch('${API_URL}/api/admin/registros', {
+    fetch(`${API_URL}/api/admin/registros', {
       headers: { 'x-admin-key': 'SDS2026admin' }
     })
       .then(r => r.json())
@@ -113,7 +113,7 @@ export default function BusquedaAvanzada() {
       })
       .catch(() => setCargando(false))
 
-    fetch('${API_URL}/api/admin/puntos-servicio', {
+    fetch(`${API_URL}/api/admin/puntos-servicio', {
       headers: { 'x-admin-key': 'SDS2026admin' }
     })
       .then(r => r.json())

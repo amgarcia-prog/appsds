@@ -15,7 +15,7 @@ export default function PanelJunta() {
   const cargar = async () => {
     setCargando(true)
     try {
-      const res = await fetch('${API_URL}/api/junta/pendientes', {
+      const res = await fetch(`${API_URL}/api/junta/pendientes', {
         headers: { 'x-admin-key': 'SDS2026admin' }
       })
       const data = await res.json()

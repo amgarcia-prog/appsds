@@ -106,7 +106,7 @@ export default function PanelFormacion() {
       formData.append('archivo', archivo)
       formData.append('bucket', 'actas-consagracion')
       formData.append('carpeta', sesion.ciudad || 'general')
-      const res = await fetch('${API_URL}/api/upload', { method: 'POST', body: formData })
+      const res = await fetch(`${API_URL}/api/upload', { method: 'POST', body: formData })
       const data = await res.json()
       if (data.ok) setActaUrl(data.url)
     } catch (e) { console.error(e) }
@@ -119,7 +119,7 @@ export default function PanelFormacion() {
     if (!actaUrl) { setMensaje('❌ El acta firmada de consagración es obligatoria'); setTimeout(() => setMensaje(''), 3000); return }
     setGuardando(true)
     try {
-      const res = await fetch('${API_URL}/api/formacion/consagrar-pacientes', {
+      const res = await fetch(`${API_URL}/api/formacion/consagrar-pacientes', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-miembro-id': sesion.id },
         body: JSON.stringify({ ids: seleccionadosConsagracion, fecha_consagracion: fechaCeremonia, acta_url: actaUrl }),
