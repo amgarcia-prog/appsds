@@ -113,7 +113,7 @@ export default function RegistroForm() {
 
   const handleSubmit = async () => {
     try {
-      const respuesta = await fetch(`${API_URL}/api/registro', {
+      const respuesta = await fetch(`${API_URL}/api/registro`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos),

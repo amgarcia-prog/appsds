@@ -41,7 +41,7 @@ export default function PuntosServicio() {
   const cargar = async () => {
     setCargando(true)
     try {
-      const res = await fetch(`${API_URL}/api/admin/puntos-servicio', {
+      const res = await fetch(`${API_URL}/api/admin/puntos-servicio`, {
         headers: { 'x-admin-key': 'SDS2026admin' }
       })
       const data = await res.json()
@@ -64,7 +64,7 @@ export default function PuntosServicio() {
     try {
       const url = editandoId
         ? `${API_URL}/api/admin/puntos-servicio/${editandoId}`
-        : `${API_URL}/api/admin/puntos-servicio'
+        : `${API_URL}/api/admin/puntos-servicio`
       const method = editandoId ? 'PUT' : 'POST'
       const res = await fetch(url, {
         method,
