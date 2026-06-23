@@ -78,6 +78,7 @@ export default function PanelMiembro() {
   const [pestaña, setPestaña] = useState('perfil')
   const [pasoConsagracion, setPasoConsagracion] = useState('inicio') // 'inicio' | 'motivacion' | 'enviado'
   const [motivacion, setMotivacion] = useState('')
+  const [otraComunidad, setOtraComunidad] = useState('')
   const [enviandoSolicitud, setEnviandoSolicitud] = useState(false)
   const [subiendoFoto, setSubiendoFoto] = useState(false)
   const [modoCamara, setModoCamara] = useState(false)
@@ -180,7 +181,7 @@ export default function PanelMiembro() {
       const res = await fetch(`${API_URL}/api/miembro/solicitar-consagracion`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-miembro-id': sesion.id },
-        body: JSON.stringify({ motivacion }),
+        body: JSON.stringify({ motivacion, otra_comunidad: otraComunidad.trim() }),
       })
       const data = await res.json()
       if (data.ok) {
@@ -211,6 +212,15 @@ export default function PanelMiembro() {
   const mostrarTabConsagracion = esLaborioso || esPacienteConsagrado
   const nivelLabel = esPacienteConsagrado ? 'hermano servita' : 'hermano paciente'
   const enProcesoActivo = ESTADOS_ACTIVOS.includes(datos.estado_proceso)
+
+  const calcularAnosDesdeConsagracion = () => {
+    if (!datos.fecha_consagracion) return null
+    const hoy = new Date()
+    const fc = new Date(datos.fecha_consagracion + 'T12:00:00')
+    return (hoy.getFullYear() - fc.getFullYear()) * 12 + (hoy.getMonth() - fc.getMonth())
+  }
+  const mesesDesdeConsagracionPaciente = esPacienteConsagrado ? calcularAnosDesdeConsagracion() : null
+  const cumple3Anos = mesesDesdeConsagracionPaciente !== null && mesesDesdeConsagracionPaciente >= 36
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -400,6 +410,24 @@ export default function PanelMiembro() {
                   : 'Si deseas iniciar el proceso de consagración como hermano paciente, completa la solicitud a continuación.'}
               </p>
 
+              {/* Aviso de tiempo para pacientes que quieren ser servitas */}
+              {esPacienteConsagrado && !enProcesoActivo && pasoConsagracion === 'inicio' && (
+                <div className={`rounded-lg p-4 mb-4 border ${cumple3Anos ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
+                  <p className={`text-sm font-medium mb-1 ${cumple3Anos ? 'text-green-800' : 'text-amber-800'}`}>
+                    {cumple3Anos ? '✓ Cumples el tiempo requerido' : '⚠️ Requisito de tiempo'}
+                  </p>
+                  <p className={`text-xs ${cumple3Anos ? 'text-green-700' : 'text-amber-700'}`}>
+                    Para consagrarte como hermano servita se requieren al menos 3 años desde tu consagración como paciente.
+                    {mesesDesdeConsagracionPaciente !== null
+                      ? ` Llevas ${mesesDesdeConsagracionPaciente} meses (${Math.floor(mesesDesdeConsagracionPaciente / 12)} año${Math.floor(mesesDesdeConsagracionPaciente / 12) !== 1 ? 's' : ''} y ${mesesDesdeConsagracionPaciente % 12} mes${mesesDesdeConsagracionPaciente % 12 !== 1 ? 'es' : ''}).`
+                      : ' No se encontró fecha de consagración registrada.'}
+                  </p>
+                  {!cumple3Anos && (
+                    <p className="text-xs text-amber-600 mt-2">Puedes enviar la solicitud de todas formas — el responsable de formación verificará el requisito.</p>
+                  )}
+                </div>
+              )}
+
               {enProcesoActivo && pasoConsagracion !== 'enviado' ? (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
                   <p className="text-sm font-medium text-blue-800 mb-1">Ya tienes un proceso en curso</p>
@@ -428,6 +456,20 @@ export default function PanelMiembro() {
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
                     <p className="text-xs text-amber-800 font-medium">¿Estás seguro de que deseas consagrarte como {nivelLabel}?</p>
                   </div>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      ¿Perteneces a otra comunidad o congregación religiosa?
+                    </label>
+                    <input
+                      type="text"
+                      value={otraComunidad}
+                      onChange={e => setOtraComunidad(e.target.value)}
+                      placeholder="Si perteneces a otra, escribe cuál. Si no, deja en blanco."
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-1"
+                    />
+                  </div>
+
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     ¿Por qué deseas consagrarte como {nivelLabel}? <span className="text-red-500">*</span>
                   </label>

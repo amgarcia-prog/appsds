@@ -233,6 +233,7 @@ export default function DetalleRegistro({ registro, onVolver }) {
             <Campo label="Fecha de nacimiento" campo="fecha_nacimiento" tipo="date" />
             <Selector label="Sexo" campo="sexo" opciones={['Femenino', 'Masculino']} />
             <Selector label="Estado civil" campo="estado_civil" opciones={ESTADOS_CIVILES} />
+            <Campo label="Fecha de fallecimiento" campo="fecha_fallecimiento" tipo="date" />
           </div>
         </div>
 

@@ -210,7 +210,16 @@ export default function PanelFormacion() {
 
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
           <div className="bg-white rounded-lg border border-gray-200 p-5">
-            <h2 className="font-bold text-blue-800 text-lg mb-4">{nombre}</h2>
+            <div className="flex items-center gap-4 mb-4">
+              {seleccionado.foto_url ? (
+                <img src={seleccionado.foto_url} alt="Foto" className="w-16 h-16 rounded-full object-cover border-2 border-blue-200 flex-shrink-0" />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl text-gray-400">👤</span>
+                </div>
+              )}
+              <h2 className="font-bold text-blue-800 text-lg">{nombre}</h2>
+            </div>
 
             {/* Edad */}
             <div className={`flex items-center justify-between p-3 rounded-lg mb-3 ${esMenorEdad ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'}`}>

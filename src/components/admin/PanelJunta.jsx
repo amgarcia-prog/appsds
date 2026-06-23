@@ -42,6 +42,7 @@ export default function PanelJunta() {
   }
 
   const tomarDecision = async (id, decision) => {
+    if (!fechaJunta) { setMensaje('❌ La fecha de reunión de la junta es obligatoria'); setTimeout(() => setMensaje(''), 3000); return }
     setGuardando(true)
     try {
       const res = await fetch(`${API_URL}/api/junta/decision/${id}`, {
@@ -92,9 +93,18 @@ export default function PanelJunta() {
         {mensaje && <p className="text-sm text-center py-2 bg-white border rounded-lg">{mensaje}</p>}
 
         <div className="bg-white rounded-lg border border-gray-200 p-5 space-y-4">
-          <div>
-            <h2 className="font-bold text-blue-800 text-xl">{nombre}</h2>
-            <p className="text-sm text-gray-500">{seleccionado.numero_identificacion} · {seleccionado.ciudad_donde_sirve}{seleccionado.pais_servicio ? `, ${seleccionado.pais_servicio}` : ''}</p>
+          <div className="flex items-center gap-4">
+            {seleccionado.foto_url ? (
+              <img src={seleccionado.foto_url} alt="Foto" className="w-16 h-16 rounded-full object-cover border-2 border-blue-200 flex-shrink-0" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl text-gray-400">👤</span>
+              </div>
+            )}
+            <div>
+              <h2 className="font-bold text-blue-800 text-xl">{nombre}</h2>
+              <p className="text-sm text-gray-500">{seleccionado.numero_identificacion} · {seleccionado.ciudad_donde_sirve}{seleccionado.pais_servicio ? `, ${seleccionado.pais_servicio}` : ''}</p>
+            </div>
           </div>
 
           {/* Requisitos */}
