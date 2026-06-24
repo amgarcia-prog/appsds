@@ -223,6 +223,11 @@ export default function DetalleRegistro({ registro, onVolver }) {
         {/* Datos personales */}
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <h2 className="font-bold text-blue-800 mb-3">Datos personales</h2>
+          {datos.foto_url && (
+            <div className="flex justify-center mb-4">
+              <img src={datos.foto_url} alt="Foto" className="w-24 h-24 rounded-full object-cover border-2 border-blue-200" />
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-x-4">
             <Campo label="Primer nombre" campo="primer_nombre" />
             <Campo label="Segundo nombre" campo="segundo_nombre" />
