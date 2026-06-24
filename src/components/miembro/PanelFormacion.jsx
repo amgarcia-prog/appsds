@@ -60,6 +60,8 @@ export default function PanelFormacion() {
     return (hoy.getFullYear() - inicio.getFullYear()) * 12 + (hoy.getMonth() - inicio.getMonth())
   }
 
+  const nivelConsagracion = (r) => r.estado_consagracion === 'paciente' ? 'servita' : 'paciente'
+
   const cambiarEstado = async (id, estado, conceptoFormacion) => {
     setGuardando(true)
     try {
@@ -184,8 +186,12 @@ export default function PanelFormacion() {
   if (seleccionado) {
     const edad = calcularEdad(seleccionado.fecha_nacimiento)
     const meses = calcularMeses(seleccionado.fecha_inicio_servicio)
-    const esMenorEdad = typeof edad === 'number' && edad < 18
-    const pocosM = meses !== null && meses < 6
+    const mesesDesdeConsagracion = calcularMeses(seleccionado.fecha_consagracion)
+    const esParaServita = seleccionado.estado_consagracion === 'paciente'
+    const esMenorEdad = !esParaServita && typeof edad === 'number' && edad < 18
+    const pocosM = esParaServita
+      ? (mesesDesdeConsagracion === null || mesesDesdeConsagracion < 36)
+      : (meses !== null && meses < 6)
     const nombre = [seleccionado.primer_nombre, seleccionado.segundo_nombre, seleccionado.primer_apellido, seleccionado.segundo_apellido].filter(Boolean).join(' ')
 
     return (
@@ -218,32 +224,52 @@ export default function PanelFormacion() {
                   <span className="text-2xl text-gray-400">👤</span>
                 </div>
               )}
-              <h2 className="font-bold text-blue-800 text-lg">{nombre}</h2>
+              <div>
+                <h2 className="font-bold text-blue-800 text-lg">{nombre}</h2>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${esParaServita ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                  Desea consagrarse como {esParaServita ? 'hermano servita' : 'hermano paciente'}
+                </span>
+              </div>
             </div>
 
-            {/* Edad */}
-            <div className={`flex items-center justify-between p-3 rounded-lg mb-3 ${esMenorEdad ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'}`}>
-              <div>
-                <p className="text-xs font-medium text-gray-600">Edad</p>
-                <p className="text-sm font-bold">{edad} años</p>
-                <p className="text-xs text-gray-500">Nacimiento: {seleccionado.fecha_nacimiento ? new Date(seleccionado.fecha_nacimiento + 'T12:00:00').toLocaleDateString('es-CO') : '—'}</p>
+            {/* Edad — solo requerida para pacientes */}
+            {!esParaServita && (
+              <div className={`flex items-center justify-between p-3 rounded-lg mb-3 ${esMenorEdad ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'}`}>
+                <div>
+                  <p className="text-xs font-medium text-gray-600">Edad</p>
+                  <p className="text-sm font-bold">{edad} años</p>
+                  <p className="text-xs text-gray-500">Nacimiento: {seleccionado.fecha_nacimiento ? new Date(seleccionado.fecha_nacimiento + 'T12:00:00').toLocaleDateString('es-CO') : '—'}</p>
+                </div>
+                <span className={`text-xs font-medium px-2 py-1 rounded-full ${esMenorEdad ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                  {esMenorEdad ? '✗ Menor de edad' : '✓ Mayor de edad'}
+                </span>
               </div>
-              <span className={`text-xs font-medium px-2 py-1 rounded-full ${esMenorEdad ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                {esMenorEdad ? '✗ Menor de edad' : '✓ Mayor de edad'}
-              </span>
-            </div>
+            )}
 
-            {/* Tiempo de servicio */}
-            <div className={`flex items-center justify-between p-3 rounded-lg mb-3 ${pocosM ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'}`}>
-              <div>
-                <p className="text-xs font-medium text-gray-600">Tiempo de servicio</p>
-                <p className="text-sm font-bold">{meses !== null ? `${meses} meses` : '—'}</p>
-                <p className="text-xs text-gray-500">Inicio: {seleccionado.fecha_inicio_servicio ? new Date(seleccionado.fecha_inicio_servicio + 'T12:00:00').toLocaleDateString('es-CO') : '—'}</p>
+            {/* Tiempo de servicio / consagración */}
+            {esParaServita ? (
+              <div className={`flex items-center justify-between p-3 rounded-lg mb-3 ${pocosM ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'}`}>
+                <div>
+                  <p className="text-xs font-medium text-gray-600">Tiempo desde consagración como paciente</p>
+                  <p className="text-sm font-bold">{mesesDesdeConsagracion !== null ? `${mesesDesdeConsagracion} meses` : '—'}</p>
+                  <p className="text-xs text-gray-500">Consagrado: {seleccionado.fecha_consagracion ? new Date(seleccionado.fecha_consagracion + 'T12:00:00').toLocaleDateString('es-CO') : '—'}</p>
+                </div>
+                <span className={`text-xs font-medium px-2 py-1 rounded-full ${mesesDesdeConsagracion === null ? 'bg-gray-100 text-gray-500' : pocosM ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                  {mesesDesdeConsagracion === null ? 'Sin fecha' : pocosM ? '✗ Menos de 3 años' : '✓ 3 años o más'}
+                </span>
               </div>
-              <span className={`text-xs font-medium px-2 py-1 rounded-full ${meses === null ? 'bg-gray-100 text-gray-500' : pocosM ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                {meses === null ? 'Sin fecha' : pocosM ? '✗ Menos de 6 meses' : '✓ 6 meses o más'}
-              </span>
-            </div>
+            ) : (
+              <div className={`flex items-center justify-between p-3 rounded-lg mb-3 ${pocosM ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'}`}>
+                <div>
+                  <p className="text-xs font-medium text-gray-600">Tiempo de servicio</p>
+                  <p className="text-sm font-bold">{meses !== null ? `${meses} meses` : '—'}</p>
+                  <p className="text-xs text-gray-500">Inicio: {seleccionado.fecha_inicio_servicio ? new Date(seleccionado.fecha_inicio_servicio + 'T12:00:00').toLocaleDateString('es-CO') : '—'}</p>
+                </div>
+                <span className={`text-xs font-medium px-2 py-1 rounded-full ${meses === null ? 'bg-gray-100 text-gray-500' : pocosM ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                  {meses === null ? 'Sin fecha' : pocosM ? '✗ Menos de 6 meses' : '✓ 6 meses o más'}
+                </span>
+              </div>
+            )}
 
             {/* Motivación */}
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
@@ -439,9 +465,13 @@ export default function PanelFormacion() {
                 onSeleccionar={r => abrirDetalle(r, 'requisitos')}
                 textoVacio="No hay aspirantes pendientes por verificación de requisitos"
                 textoBoton={r => {
+                  const esServita = r.estado_consagracion === 'paciente'
                   const edad = calcularEdad(r.fecha_nacimiento)
-                  const meses = calcularMeses(r.fecha_inicio_servicio)
-                  const alerta = (typeof edad === 'number' && edad < 18) || (meses !== null && meses < 6)
+                  const mesesServ = calcularMeses(r.fecha_inicio_servicio)
+                  const mesesCons = calcularMeses(r.fecha_consagracion)
+                  const alerta = esServita
+                    ? (mesesCons === null || mesesCons < 36)
+                    : (typeof edad === 'number' && edad < 18) || (mesesServ !== null && mesesServ < 6)
                   return { texto: alerta ? '⚠️ Revisar' : 'Revisar', alerta }
                 }}
               />
