@@ -12,6 +12,9 @@ export default function PanelObrasServicios() {
   const [resultados, setResultados] = useState([])
   const [buscando, setBuscando] = useState(false)
   const [mensaje, setMensaje] = useState('')
+  const [mostrarFormNuevo, setMostrarFormNuevo] = useState(false)
+  const [nombreNuevo, setNombreNuevo] = useState('')
+  const [guardandoNuevo, setGuardandoNuevo] = useState(false)
 
   const headers = { 'x-miembro-id': sesion.id }
 
@@ -94,6 +97,25 @@ export default function PanelObrasServicios() {
       body: JSON.stringify({ punto: puntoSeleccionado.nombre })
     }).then(r => r.json())
     if (res.ok) { await abrirPunto(puntoSeleccionado); mostrarMensaje('✅ Coordinador quitado') }
+  }
+
+  const crearPunto = async () => {
+    if (!nombreNuevo.trim()) return
+    setGuardandoNuevo(true)
+    const res = await fetch(`${API_URL}/api/obras/puntos-servicio`, {
+      method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre: nombreNuevo.trim(), ciudad: sesion.ciudad, pais: sesion.pais || 'Colombia' })
+    }).then(r => r.json())
+    if (res.ok) { setNombreNuevo(''); setMostrarFormNuevo(false); await cargarPuntos(); mostrarMensaje('✅ Punto de servicio creado') }
+    else mostrarMensaje('❌ ' + (res.mensaje || 'Error al crear'))
+    setGuardandoNuevo(false)
+  }
+
+  const eliminarPunto = async (punto) => {
+    if (punto.total_miembros > 0) { mostrarMensaje(`❌ No se puede eliminar: tiene ${punto.total_miembros} miembro(s) asignado(s)`); return }
+    if (!confirm(`¿Eliminar el punto "${punto.nombre}"?`)) return
+    const res = await fetch(`${API_URL}/api/obras/puntos-servicio/${punto.id}`, { method: 'DELETE', headers }).then(r => r.json())
+    if (res.ok) { await cargarPuntos(); mostrarMensaje('✅ Punto de servicio eliminado') }
   }
 
   const nivelLabel = (nivel) => {
@@ -195,7 +217,35 @@ export default function PanelObrasServicios() {
   // Lista de puntos de servicio
   return (
     <div>
-      <h2 className="font-bold text-blue-800 text-lg mb-4">Puntos de servicio — {sesion.ciudad}</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-bold text-blue-800 text-lg">Puntos de servicio — {sesion.ciudad}</h2>
+        <button onClick={() => { setMostrarFormNuevo(!mostrarFormNuevo); setNombreNuevo('') }}
+          className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700">
+          + Nuevo punto
+        </button>
+      </div>
+
+      {mensaje && <p className="text-sm text-center py-2 bg-white border rounded-lg mb-3">{mensaje}</p>}
+
+      {mostrarFormNuevo && (
+        <div className="bg-white border border-blue-200 rounded-lg p-4 mb-4">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Nuevo punto de servicio</p>
+          <input type="text" value={nombreNuevo} onChange={e => setNombreNuevo(e.target.value)}
+            placeholder="Nombre del punto de servicio..."
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3" />
+          <div className="flex gap-2">
+            <button onClick={crearPunto} disabled={guardandoNuevo || !nombreNuevo.trim()}
+              className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+              {guardandoNuevo ? 'Guardando...' : 'Guardar'}
+            </button>
+            <button onClick={() => setMostrarFormNuevo(false)}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
       {cargando ? (
         <p className="text-sm text-gray-400 text-center py-8">Cargando...</p>
       ) : puntos.length === 0 ? (
@@ -203,14 +253,18 @@ export default function PanelObrasServicios() {
       ) : (
         <div className="space-y-2">
           {puntos.map(p => (
-            <button key={p.id} onClick={() => abrirPunto(p)}
-              className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 flex items-center justify-between hover:border-blue-300 hover:bg-blue-50 transition-colors text-left">
-              <span className="text-sm font-medium text-gray-800">{p.nombre}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">{p.total_miembros} miembro(s)</span>
-                <span className="text-gray-400">›</span>
-              </div>
-            </button>
+            <div key={p.id} className="bg-white border border-gray-200 rounded-lg px-4 py-3 flex items-center justify-between hover:border-blue-200 transition-colors">
+              <button onClick={() => abrirPunto(p)} className="flex-1 flex items-center justify-between text-left">
+                <span className="text-sm font-medium text-gray-800">{p.nombre}</span>
+                <div className="flex items-center gap-2 mr-3">
+                  <span className="text-xs text-gray-500">{p.total_miembros} miembro(s)</span>
+                  <span className="text-gray-400">›</span>
+                </div>
+              </button>
+              <button onClick={() => eliminarPunto(p)} className="text-xs text-red-500 hover:text-red-700 font-medium ml-2 flex-shrink-0">
+                Eliminar
+              </button>
+            </div>
           ))}
         </div>
       )}
