@@ -104,6 +104,9 @@ export default function PanelJunta() {
             <div>
               <h2 className="font-bold text-blue-800 text-xl">{nombre}</h2>
               <p className="text-sm text-gray-500">{seleccionado.numero_identificacion} · {seleccionado.ciudad_donde_sirve}{seleccionado.pais_servicio ? `, ${seleccionado.pais_servicio}` : ''}</p>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${seleccionado.estado_consagracion === 'paciente' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                Desea consagrarse como {seleccionado.estado_consagracion === 'paciente' ? 'hermano servita' : 'hermano paciente'}
+              </span>
             </div>
           </div>
 
