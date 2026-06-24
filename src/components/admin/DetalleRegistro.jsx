@@ -319,7 +319,6 @@ export default function DetalleRegistro({ registro, onVolver }) {
             <Campo label="Fecha inicio servicio" campo="fecha_inicio_servicio" tipo="date" />
             <Campo label="Fecha consagración como paciente" campo="fecha_consagracion_paciente" tipo="date" />
             <Campo label="Fecha consagración como servita" campo="fecha_consagracion_servita" tipo="date" />
-            <Campo label="Fecha consagración como pilar" campo="fecha_consagracion_pilar" tipo="date" />
             <Campo label="Fecha inicio encargo (pilar)" campo="fecha_inicio_encargo" tipo="date" />
 
             <Selector label="¿Es coordinador de punto de servicio?" campo="es_coordinador" opciones={['Sí', 'No']} />
