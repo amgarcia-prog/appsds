@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
 import API_URL from '../../config.js'
 
+const PAISES = ['Argentina','Bolivia','Chile','Colombia','Costa Rica','Ecuador','España','Estados Unidos','México','Paraguay','Perú','Uruguay','Venezuela']
+const DEPARTAMENTOS = {
+  Colombia: ['Antioquia','Arauca','Atlántico','Bolívar','Boyacá','Caldas','Caquetá','Cundinamarca','Huila','Meta','Norte de Santander','Risaralda','Santander','Tolima','Valle del Cauca'],
+  Ecuador: ['Pichincha'], Chile: ['Región Metropolitana'], España: ['Aragón','Comunidad de Madrid','Galicia'],
+  'Estados Unidos': ['Florida','New Jersey','Texas','Utah'], México: ['Ciudad de México','Nuevo León'],
+  Paraguay: ['Guairá'], Perú: ['Lima'], Venezuela: ['Lara'], 'Costa Rica': ['San José'],
+  Argentina: [], Bolivia: [], Uruguay: [],
+}
+
 export default function PanelObrasServicios() {
   const sesion = JSON.parse(localStorage.getItem('miembro_sesion') || '{}')
   const [puntos, setPuntos] = useState([])
@@ -14,6 +23,8 @@ export default function PanelObrasServicios() {
   const [mensaje, setMensaje] = useState('')
   const [mostrarFormNuevo, setMostrarFormNuevo] = useState(false)
   const [nombreNuevo, setNombreNuevo] = useState('')
+  const [paisNuevo, setPaisNuevo] = useState('Colombia')
+  const [deptoNuevo, setDeptoNuevo] = useState('')
   const [guardandoNuevo, setGuardandoNuevo] = useState(false)
 
   const headers = { 'x-miembro-id': sesion.id }
@@ -100,13 +111,13 @@ export default function PanelObrasServicios() {
   }
 
   const crearPunto = async () => {
-    if (!nombreNuevo.trim()) return
+    if (!nombreNuevo.trim() || !paisNuevo) return
     setGuardandoNuevo(true)
     const res = await fetch(`${API_URL}/api/obras/puntos-servicio`, {
       method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre: nombreNuevo.trim(), ciudad: sesion.ciudad, pais: sesion.pais || 'Colombia' })
+      body: JSON.stringify({ nombre: nombreNuevo.trim(), ciudad: sesion.ciudad, pais: paisNuevo, departamento: deptoNuevo || null })
     }).then(r => r.json())
-    if (res.ok) { setNombreNuevo(''); setMostrarFormNuevo(false); await cargarPuntos(); mostrarMensaje('✅ Punto de servicio creado') }
+    if (res.ok) { setNombreNuevo(''); setPaisNuevo('Colombia'); setDeptoNuevo(''); setMostrarFormNuevo(false); await cargarPuntos(); mostrarMensaje('✅ Punto de servicio creado') }
     else mostrarMensaje('❌ ' + (res.mensaje || 'Error al crear'))
     setGuardandoNuevo(false)
   }
@@ -232,7 +243,19 @@ export default function PanelObrasServicios() {
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Nuevo punto de servicio</p>
           <input type="text" value={nombreNuevo} onChange={e => setNombreNuevo(e.target.value)}
             placeholder="Nombre del punto de servicio..."
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3" />
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2" />
+          <select value={paisNuevo} onChange={e => { setPaisNuevo(e.target.value); setDeptoNuevo('') }}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2">
+            {PAISES.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+          {(DEPARTAMENTOS[paisNuevo] || []).length > 0 && (
+            <select value={deptoNuevo} onChange={e => setDeptoNuevo(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2">
+              <option value="">Departamento (opcional)</option>
+              {DEPARTAMENTOS[paisNuevo].map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          )}
+          <p className="text-xs text-gray-400 mb-3">Ciudad: <strong>{sesion.ciudad}</strong></p>
           <div className="flex gap-2">
             <button onClick={crearPunto} disabled={guardandoNuevo || !nombreNuevo.trim()}
               className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
