@@ -317,7 +317,9 @@ export default function DetalleRegistro({ registro, onVolver }) {
             )}
 
             <Campo label="Fecha inicio servicio" campo="fecha_inicio_servicio" tipo="date" />
-            <Campo label="Fecha consagración (paciente/servita)" campo="fecha_consagracion" tipo="date" />
+            <Campo label="Fecha consagración como paciente" campo="fecha_consagracion_paciente" tipo="date" />
+            <Campo label="Fecha consagración como servita" campo="fecha_consagracion_servita" tipo="date" />
+            <Campo label="Fecha consagración como pilar" campo="fecha_consagracion_pilar" tipo="date" />
             <Campo label="Fecha inicio encargo (pilar)" campo="fecha_inicio_encargo" tipo="date" />
 
             <Selector label="¿Es coordinador de punto de servicio?" campo="es_coordinador" opciones={['Sí', 'No']} />
@@ -395,7 +397,8 @@ export default function DetalleRegistro({ registro, onVolver }) {
           <Checkboxes label="Responsabilidades en el consejo" campo="responsabilidades_consejo" opciones={RESPONSABILIDADES_CONSEJO} />
           <Checkboxes label="Responsabilidades como Hermano Pilar" campo="responsabilidades_pilar" opciones={RESPONSABILIDADES_PILAR} />
 
-          <Campo label="¿Por qué desea consagrarse?" campo="por_que_consagrarse" tipo="textarea" />
+          <Campo label="Motivación consagración como paciente" campo="motivacion_paciente" tipo="textarea" />
+          <Campo label="Motivación consagración como servita" campo="motivacion_servita" tipo="textarea" />
         </div>
 
         {/* Historial del proceso */}

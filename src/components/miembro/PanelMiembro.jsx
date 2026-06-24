@@ -214,9 +214,9 @@ export default function PanelMiembro() {
   const enProcesoActivo = ESTADOS_ACTIVOS.includes(datos.estado_proceso)
 
   const calcularAnosDesdeConsagracion = () => {
-    if (!datos.fecha_consagracion) return null
+    if (!datos.fecha_consagracion_paciente) return null
     const hoy = new Date()
-    const fc = new Date(datos.fecha_consagracion + 'T12:00:00')
+    const fc = new Date(datos.fecha_consagracion_paciente + 'T12:00:00')
     return (hoy.getFullYear() - fc.getFullYear()) * 12 + (hoy.getMonth() - fc.getMonth())
   }
   const mesesDesdeConsagracionPaciente = esPacienteConsagrado ? calcularAnosDesdeConsagracion() : null

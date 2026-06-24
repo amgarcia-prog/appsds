@@ -132,7 +132,7 @@ export default function PanelJunta() {
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">¿Por qué desea consagrarse?</p>
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <p className="text-sm text-gray-700 leading-relaxed">{seleccionado.por_que_consagrarse || '—'}</p>
+              <p className="text-sm text-gray-700 leading-relaxed">{(seleccionado.estado_consagracion === 'paciente' ? seleccionado.motivacion_servita : seleccionado.motivacion_paciente) || '—'}</p>
             </div>
           </div>
 

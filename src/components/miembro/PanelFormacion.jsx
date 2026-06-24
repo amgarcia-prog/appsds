@@ -186,7 +186,7 @@ export default function PanelFormacion() {
   if (seleccionado) {
     const edad = calcularEdad(seleccionado.fecha_nacimiento)
     const meses = calcularMeses(seleccionado.fecha_inicio_servicio)
-    const mesesDesdeConsagracion = calcularMeses(seleccionado.fecha_consagracion)
+    const mesesDesdeConsagracion = calcularMeses(seleccionado.fecha_consagracion_paciente)
     const esParaServita = seleccionado.estado_consagracion === 'paciente'
     const esMenorEdad = !esParaServita && typeof edad === 'number' && edad < 18
     const pocosM = esParaServita
@@ -252,7 +252,7 @@ export default function PanelFormacion() {
                 <div>
                   <p className="text-xs font-medium text-gray-600">Tiempo desde consagración como paciente</p>
                   <p className="text-sm font-bold">{mesesDesdeConsagracion !== null ? `${mesesDesdeConsagracion} meses` : '—'}</p>
-                  <p className="text-xs text-gray-500">Consagrado: {seleccionado.fecha_consagracion ? new Date(seleccionado.fecha_consagracion + 'T12:00:00').toLocaleDateString('es-CO') : '—'}</p>
+                  <p className="text-xs text-gray-500">Consagrado paciente: {seleccionado.fecha_consagracion_paciente ? new Date(seleccionado.fecha_consagracion_paciente + 'T12:00:00').toLocaleDateString('es-CO') : '—'}</p>
                 </div>
                 <span className={`text-xs font-medium px-2 py-1 rounded-full ${mesesDesdeConsagracion === null ? 'bg-gray-100 text-gray-500' : pocosM ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                   {mesesDesdeConsagracion === null ? 'Sin fecha' : pocosM ? '✗ Menos de 3 años' : '✓ 3 años o más'}
@@ -274,7 +274,7 @@ export default function PanelFormacion() {
             {/* Motivación */}
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
               <p className="text-xs font-medium text-gray-600 mb-2">¿Por qué desea consagrarse?</p>
-              <p className="text-sm text-gray-700 leading-relaxed">{seleccionado.por_que_consagrarse || '—'}</p>
+              <p className="text-sm text-gray-700 leading-relaxed">{(esParaServita ? seleccionado.motivacion_servita : seleccionado.motivacion_paciente) || '—'}</p>
             </div>
 
             {(esMenorEdad || pocosM) && modo === 'requisitos' && (
@@ -468,7 +468,7 @@ export default function PanelFormacion() {
                   const esServita = r.estado_consagracion === 'paciente'
                   const edad = calcularEdad(r.fecha_nacimiento)
                   const mesesServ = calcularMeses(r.fecha_inicio_servicio)
-                  const mesesCons = calcularMeses(r.fecha_consagracion)
+                  const mesesCons = calcularMeses(r.fecha_consagracion_paciente)
                   const alerta = esServita
                     ? (mesesCons === null || mesesCons < 36)
                     : (typeof edad === 'number' && edad < 18) || (mesesServ !== null && mesesServ < 6)

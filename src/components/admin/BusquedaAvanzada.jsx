@@ -64,9 +64,12 @@ const TODAS_COLUMNAS = [
   { key: 'responsabilidades_consejo', label: 'Responsabilidades consejo' },
   { key: 'estado_consagracion', label: 'Tipo de servidor' },
   { key: 'fecha_inicio_servicio', label: 'Fecha inicio servicio' },
-  { key: 'fecha_consagracion', label: 'Fecha de consagración' },
+  { key: 'fecha_consagracion_paciente', label: 'Fecha consagración paciente' },
+  { key: 'fecha_consagracion_servita', label: 'Fecha consagración servita' },
+  { key: 'fecha_consagracion_pilar', label: 'Fecha consagración pilar' },
   { key: 'fecha_inicio_encargo', label: 'Fecha inicio encargo (Pilar)' },
-  { key: 'por_que_consagrarse', label: '¿Por qué desea consagrarse?' },
+  { key: 'motivacion_paciente', label: 'Motivación consagración paciente' },
+  { key: 'motivacion_servita', label: 'Motivación consagración servita' },
   { key: 'estado_proceso', label: 'Estado del proceso' },
   { key: 'fecha_estado', label: 'Fecha último cambio de estado' },
   { key: 'created_at', label: 'Fecha de registro' },
@@ -177,7 +180,7 @@ export default function BusquedaAvanzada() {
     if (['puntos_servicio','puntos_coordina','responsabilidades_consejo'].includes(key)) {
       return (r[key] || []).join(', ')
     }
-    if (['fecha_nacimiento','fecha_inicio_servicio','fecha_consagracion','fecha_inicio_encargo','fecha_inicio_consejo'].includes(key)) {
+    if (['fecha_nacimiento','fecha_inicio_servicio','fecha_consagracion_paciente','fecha_consagracion_servita','fecha_consagracion_pilar','fecha_inicio_encargo','fecha_inicio_consejo'].includes(key)) {
       return r[key] ? new Date(r[key] + 'T12:00:00').toLocaleDateString('es-CO') : ''
     }
     if (['fecha_estado','created_at'].includes(key)) {
