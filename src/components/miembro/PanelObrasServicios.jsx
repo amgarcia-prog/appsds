@@ -79,6 +79,23 @@ export default function PanelObrasServicios() {
     }
   }
 
+  const adicionarCoordinador = async (miembro) => {
+    const res = await fetch(`${API_URL}/api/obras/miembro/${miembro.id}/adicionar-coordinador`, {
+      method: 'PUT', headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ punto: puntoSeleccionado.nombre })
+    }).then(r => r.json())
+    if (res.ok) { await abrirPunto(puntoSeleccionado); mostrarMensaje('✅ Coordinador adicionado') }
+  }
+
+  const quitarCoordinador = async (miembro) => {
+    if (!confirm(`¿Quitar a ${miembro.primer_nombre} ${miembro.primer_apellido} como coordinador de ${puntoSeleccionado.nombre}?`)) return
+    const res = await fetch(`${API_URL}/api/obras/miembro/${miembro.id}/quitar-coordinador`, {
+      method: 'PUT', headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ punto: puntoSeleccionado.nombre })
+    }).then(r => r.json())
+    if (res.ok) { await abrirPunto(puntoSeleccionado); mostrarMensaje('✅ Coordinador quitado') }
+  }
+
   const nivelLabel = (nivel) => {
     if (nivel === 'laborioso') return { texto: 'Laborioso', color: 'bg-gray-100 text-gray-600' }
     if (nivel === 'paciente') return { texto: 'Paciente', color: 'bg-blue-100 text-blue-700' }
@@ -159,6 +176,11 @@ export default function PanelObrasServicios() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${nivel.color}`}>{nivel.texto}</span>
+                    {esCoord ? (
+                      <button onClick={() => quitarCoordinador(m)} className="text-xs text-orange-600 hover:text-orange-800 font-medium">Quitar coord.</button>
+                    ) : (
+                      <button onClick={() => adicionarCoordinador(m)} className="text-xs text-green-700 hover:text-green-900 font-medium">+ Coordinador</button>
+                    )}
                     <button onClick={() => quitarMiembro(m)} className="text-xs text-red-600 hover:text-red-800 font-medium">Quitar</button>
                   </div>
                 </div>
