@@ -104,7 +104,7 @@ export default function PanelObrasServicios() {
     setGuardandoNuevo(true)
     const res = await fetch(`${API_URL}/api/obras/puntos-servicio`, {
       method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre: nombreNuevo.trim(), ciudad: sesion.ciudad, pais: sesion.pais, departamento: sesion.departamento || null })
+      body: JSON.stringify({ nombre: nombreNuevo.trim() })
     }).then(r => r.json())
     if (res.ok) { setNombreNuevo(''); setMostrarFormNuevo(false); await cargarPuntos(); mostrarMensaje('✅ Punto de servicio creado') }
     else mostrarMensaje('❌ ' + (res.mensaje || 'Error al crear'))
@@ -230,7 +230,7 @@ export default function PanelObrasServicios() {
       {mostrarFormNuevo && (
         <div className="bg-white border border-blue-200 rounded-lg p-4 mb-4">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Nuevo punto de servicio</p>
-          <p className="text-xs text-gray-400 mb-2">Ciudad: <strong>{sesion.ciudad}</strong> · {sesion.pais}</p>
+          <p className="text-xs text-gray-400 mb-2">Ciudad: <strong>{sesion.ciudad}</strong></p>
           <input type="text" value={nombreNuevo} onChange={e => setNombreNuevo(e.target.value)}
             placeholder="Nombre del punto de servicio..."
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3" />
