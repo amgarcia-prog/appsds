@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import logo from '../../assets/logo-servidores.jpg'
 import API_URL from '../../config.js'
 
-export default function PanelFormacion() {
+export default function PanelFormacion({ embebido = false }) {
   const [pendientes, setPendientes] = useState([])
   const [cumpleRequisitos, setCumpleRequisitos] = useState([])
   const [aprobadosFormacion, setAprobadosFormacion] = useState([])
@@ -195,26 +195,33 @@ export default function PanelFormacion() {
     const nombre = [seleccionado.primer_nombre, seleccionado.segundo_nombre, seleccionado.primer_apellido, seleccionado.segundo_apellido].filter(Boolean).join(' ')
 
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-blue-800 text-white py-3 px-4 shadow-md sticky top-0 z-10">
-          <div className="max-w-2xl mx-auto flex items-center justify-between">
-            <button onClick={() => { setSeleccionado(null); setConcepto('') }} className="text-sm hover:text-blue-200">
-              ← Volver
-            </button>
-            <h1 className="text-base font-bold">
-              {modo === 'formacion' ? 'Registro de formación' : modo === 'consejo' ? 'Concepto del consejo' : 'Revisión de requisitos'}
-            </h1>
-            <span className="text-xs text-blue-200">{sesion.nombre}</span>
+      <div className={embebido ? '' : 'min-h-screen bg-gray-50'}>
+        {!embebido && (
+          <div className="bg-blue-800 text-white py-3 px-4 shadow-md sticky top-0 z-10">
+            <div className="max-w-2xl mx-auto flex items-center justify-between">
+              <button onClick={() => { setSeleccionado(null); setConcepto('') }} className="text-sm hover:text-blue-200">
+                ← Volver
+              </button>
+              <h1 className="text-base font-bold">
+                {modo === 'formacion' ? 'Registro de formación' : modo === 'consejo' ? 'Concepto del consejo' : 'Revisión de requisitos'}
+              </h1>
+              <span className="text-xs text-blue-200">{sesion.nombre}</span>
+            </div>
           </div>
-        </div>
+        )}
+        {embebido && (
+          <button onClick={() => { setSeleccionado(null); setConcepto('') }} className="text-sm text-blue-700 hover:text-blue-900 font-medium mb-4 block">
+            ← Volver a la lista
+          </button>
+        )}
 
         {mensaje && (
-          <div className="max-w-2xl mx-auto px-4 pt-4">
+          <div className={embebido ? 'mb-3' : 'max-w-2xl mx-auto px-4 pt-4'}>
             <p className="text-sm text-center py-2 bg-white border rounded-lg">{mensaje}</p>
           </div>
         )}
 
-        <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+        <div className={embebido ? 'space-y-4' : 'max-w-2xl mx-auto px-4 py-6 space-y-4'}>
           <div className="bg-white rounded-lg border border-gray-200 p-5">
             <div className="flex items-center gap-4 mb-4">
               {seleccionado.foto_url ? (
@@ -404,28 +411,30 @@ export default function PanelFormacion() {
 
   // Vista lista
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-blue-800 text-white py-3 px-4 shadow-md">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={logo} alt="Logo" className="w-8 h-8 rounded-full object-cover" />
-            <div>
-              <h1 className="text-base font-bold">Responsable de Formación</h1>
-              <p className="text-xs text-blue-200">{sesion.ciudad}</p>
+    <div className={embebido ? '' : 'min-h-screen bg-gray-50'}>
+      {!embebido && (
+        <div className="bg-blue-800 text-white py-3 px-4 shadow-md">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img src={logo} alt="Logo" className="w-8 h-8 rounded-full object-cover" />
+              <div>
+                <h1 className="text-base font-bold">Responsable de Formación</h1>
+                <p className="text-xs text-blue-200">{sesion.ciudad}</p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-blue-200">{sesion.nombre}</span>
-            <div className="flex bg-blue-900 rounded-lg overflow-hidden">
-              <button className="text-xs px-3 py-1.5 text-white font-medium bg-blue-600">Panel de formación</button>
-              <button onClick={() => navigate('/mi-perfil')} className="text-xs px-3 py-1.5 text-blue-200 hover:text-white hover:bg-blue-700">Mi perfil</button>
+            <div className="flex items-center gap-4">
+              <span className="text-xs text-blue-200">{sesion.nombre}</span>
+              <div className="flex bg-blue-900 rounded-lg overflow-hidden">
+                <button className="text-xs px-3 py-1.5 text-white font-medium bg-blue-600">Panel de formación</button>
+                <button onClick={() => navigate('/mi-perfil')} className="text-xs px-3 py-1.5 text-blue-200 hover:text-white hover:bg-blue-700">Mi perfil</button>
+              </div>
+              <button onClick={cerrarSesion} className="text-xs text-blue-200 hover:text-white">Cerrar sesión</button>
             </div>
-            <button onClick={cerrarSesion} className="text-xs text-blue-200 hover:text-white">Cerrar sesión</button>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className={embebido ? '' : 'max-w-4xl mx-auto px-4 py-6'}>
         {mensaje && <div className="mb-4 text-sm text-center py-2 bg-white border rounded-lg">{mensaje}</div>}
 
         {/* Pestañas */}

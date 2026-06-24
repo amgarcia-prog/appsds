@@ -23,11 +23,7 @@ export default function LoginMiembro() {
       const data = await res.json()
       if (data.ok) {
         localStorage.setItem('miembro_sesion', JSON.stringify(data.miembro))
-        if (data.miembro.roles.includes('responsable_formacion')) {
-          navigate('/formacion')
-        } else {
-          navigate('/mi-perfil')
-        }
+        navigate('/mi-perfil')
       } else {
         setError(data.mensaje)
       }

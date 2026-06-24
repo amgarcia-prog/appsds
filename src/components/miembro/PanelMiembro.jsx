@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import logo from '../../assets/logo-servidores.jpg'
 import SelectorCiudad from '../ui/SelectorCiudad'
 import API_URL from '../../config.js'
+import PanelFormacion from './PanelFormacion'
+import PanelObrasServicios from './PanelObrasServicios'
 
 const PAISES = [
   'Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica',
@@ -75,6 +77,7 @@ export default function PanelMiembro() {
   const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState('')
+  const [panelTab, setPanelTab] = useState('perfil')
   const [pestaña, setPestaña] = useState('perfil')
   const [pasoConsagracion, setPasoConsagracion] = useState('inicio') // 'inicio' | 'motivacion' | 'enviado'
   const [motivacion, setMotivacion] = useState('')
@@ -233,10 +236,24 @@ export default function PanelMiembro() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-xs text-blue-200">{sesion.nombre}</span>
-            {sesion.roles?.includes('responsable_formacion') && (
+            {(sesion.roles?.includes('responsable_formacion') || sesion.roles?.includes('responsable_obras')) && (
               <div className="flex bg-blue-900 rounded-lg overflow-hidden">
-                <button onClick={() => navigate('/formacion')} className="text-xs px-3 py-1.5 text-blue-200 hover:text-white hover:bg-blue-700">Panel de formación</button>
-                <button className="text-xs px-3 py-1.5 text-white font-medium bg-blue-600">Mi perfil</button>
+                <button onClick={() => setPanelTab('perfil')}
+                  className={`text-xs px-3 py-1.5 ${panelTab === 'perfil' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
+                  Mi perfil
+                </button>
+                {sesion.roles?.includes('responsable_formacion') && (
+                  <button onClick={() => setPanelTab('formacion')}
+                    className={`text-xs px-3 py-1.5 ${panelTab === 'formacion' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
+                    Formación
+                  </button>
+                )}
+                {sesion.roles?.includes('responsable_obras') && (
+                  <button onClick={() => setPanelTab('obras')}
+                    className={`text-xs px-3 py-1.5 ${panelTab === 'obras' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
+                    Obras y servicios
+                  </button>
+                )}
               </div>
             )}
             <button onClick={cerrarSesion} className="text-xs text-blue-200 hover:text-white">Cerrar sesión</button>
@@ -244,7 +261,18 @@ export default function PanelMiembro() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      {panelTab === 'formacion' && (
+        <div className="max-w-2xl mx-auto px-4 py-6">
+          <PanelFormacion embebido />
+        </div>
+      )}
+      {panelTab === 'obras' && (
+        <div className="max-w-2xl mx-auto px-4 py-6">
+          <PanelObrasServicios />
+        </div>
+      )}
+
+      {panelTab === 'perfil' && <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Estado del proceso */}
         <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 flex items-center justify-between">
           <div>
@@ -504,7 +532,7 @@ export default function PanelMiembro() {
             </button>
           )}
         </div>
-      </div>
+      </div>}
     </div>
   )
 }
