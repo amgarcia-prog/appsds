@@ -22,6 +22,7 @@ export default function Seccion12Pilar({ datos, actualizar, siguiente, anterior 
 
   const validar = () => {
     const e = {}
+    if (!datos.fechaInicioServicio) e.fechaInicioServicio = 'Campo requerido'
     if (!datos.fechaInicioEncargo) e.fechaInicioEncargo = 'Campo requerido'
     if ((datos.responsabilidadesPilar || []).length === 0) e.responsabilidadesPilar = 'Selecciona al menos una responsabilidad'
     setErrores(e)
@@ -44,9 +45,19 @@ export default function Seccion12Pilar({ datos, actualizar, siguiente, anterior 
 
       <div className="mb-5">
         <label className="block text-sm font-medium text-gray-700 mb-1">
+          Fecha en la que iniciaste tu servicio <CampoObligatorio />
+        </label>
+        <input type="date" value={datos.fechaInicioServicio || ''}
+          onChange={e => actualizar({ fechaInicioServicio: e.target.value })}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        {errores.fechaInicioServicio && <p className="text-red-500 text-xs mt-1">{errores.fechaInicioServicio}</p>}
+      </div>
+
+      <div className="mb-5">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
           Fecha de inicio de este encargo <CampoObligatorio />
         </label>
-        <input type="date" value={datos.fechaInicioEncargo}
+        <input type="date" value={datos.fechaInicioEncargo || ''}
           onChange={e => actualizar({ fechaInicioEncargo: e.target.value })}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
         {errores.fechaInicioEncargo && <p className="text-red-500 text-xs mt-1">{errores.fechaInicioEncargo}</p>}
