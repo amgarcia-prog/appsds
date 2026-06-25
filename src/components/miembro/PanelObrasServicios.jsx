@@ -100,7 +100,7 @@ export default function PanelObrasServicios() {
   }
 
   const crearPunto = async () => {
-    if (!nombreNuevo.trim() || !paisNuevo) return
+    if (!nombreNuevo.trim()) return
     setGuardandoNuevo(true)
     const res = await fetch(`${API_URL}/api/obras/puntos-servicio`, {
       method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
