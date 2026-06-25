@@ -105,6 +105,20 @@ export default function GestionConsejo() {
     } catch { mostrarMensaje('❌ No se pudo conectar con el servidor') }
   }
 
+  const quitarCoordinador = async (miembro, tipo) => {
+    const rol = tipo === 'principal' ? 'Coordinador principal del consejo' : 'Coordinador suplente del consejo'
+    const nombre = `${miembro.primer_nombre} ${miembro.primer_apellido}`
+    const respsActuales = miembro.responsabilidades_consejo || []
+    try {
+      const res = await fetch(`${API_URL}/api/consejo/miembro/${miembro.id}/responsabilidades`, {
+        method: 'PUT', headers: { ...ADMIN_HEADERS },
+        body: JSON.stringify({ responsabilidades: respsActuales.filter(r => r !== rol) })
+      }).then(r => r.json())
+      if (res.ok) { await cargar(ciudad); mostrarMensaje(`✅ Rol de ${rol} quitado a ${nombre}`) }
+      else mostrarMensaje('❌ ' + (res.mensaje || 'Error al quitar'))
+    } catch { mostrarMensaje('❌ No se pudo conectar con el servidor') }
+  }
+
   const coordActual = (tipo) => {
     const rol = tipo === 'principal' ? 'Coordinador principal del consejo' : 'Coordinador suplente del consejo'
     return consejeros.find(c => (c.responsabilidades_consejo || []).includes(rol))
@@ -246,13 +260,23 @@ export default function GestionConsejo() {
                     </div>
                     {/* Asignación coordinadores */}
                     <div className="flex gap-2 mt-1">
-                      {!respsCoord.includes('Coordinador principal del consejo') && (
+                      {respsCoord.includes('Coordinador principal del consejo') ? (
+                        <button onClick={() => quitarCoordinador(c, 'principal')}
+                          className="text-xs text-orange-600 hover:text-orange-800 font-medium border border-orange-200 px-2 py-0.5 rounded">
+                          − Coord. principal
+                        </button>
+                      ) : (
                         <button onClick={() => asignarCoordinador(c, 'principal')}
                           className="text-xs text-blue-600 hover:text-blue-800 font-medium border border-blue-200 px-2 py-0.5 rounded">
                           + Coord. principal
                         </button>
                       )}
-                      {!respsCoord.includes('Coordinador suplente del consejo') && (
+                      {respsCoord.includes('Coordinador suplente del consejo') ? (
+                        <button onClick={() => quitarCoordinador(c, 'suplente')}
+                          className="text-xs text-orange-600 hover:text-orange-800 font-medium border border-orange-200 px-2 py-0.5 rounded">
+                          − Coord. suplente
+                        </button>
+                      ) : (
                         <button onClick={() => asignarCoordinador(c, 'suplente')}
                           className="text-xs text-blue-600 hover:text-blue-800 font-medium border border-blue-200 px-2 py-0.5 rounded">
                           + Coord. suplente
