@@ -266,7 +266,7 @@ export default function PanelMiembro() {
                 {datos?.estado_consagracion === 'pilar' && (
                   <button onClick={() => setPanelTab('correos')}
                     className={`text-xs px-3 py-1.5 ${panelTab === 'correos' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
-                    Correos
+                    Búsqueda avanzada
                   </button>
                 )}
               </div>
