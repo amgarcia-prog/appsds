@@ -3,8 +3,11 @@ import API_URL from '../../config.js'
 
 const RESPONSABILIDADES = [
   'Financiero', 'Espiritualidad y eventos', 'Obras y servicios',
-  'Comunicaciones', 'Misiones', 'Torreta', 'Formación y consagraciones',
-  'Tecnología', 'Coordinador principal del consejo', 'Coordinador suplente del consejo'
+  'Comunicaciones', 'Misiones', 'Torreta', 'Formación y consagraciones', 'Tecnología'
+]
+
+const RESPONSABILIDADES_SOLO_JUNTA = [
+  'Coordinador principal del consejo', 'Coordinador suplente del consejo'
 ]
 
 export default function PanelResponsabilidadesConsejo() {
@@ -116,7 +119,9 @@ export default function PanelResponsabilidadesConsejo() {
                     <span className="text-xs text-gray-400">Sin responsabilidades asignadas</span>
                   ) : (
                     (c.responsabilidades_consejo || []).map(r => (
-                      <span key={r} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{r}</span>
+                      <span key={r} className={`text-xs px-2 py-0.5 rounded-full ${RESPONSABILIDADES_SOLO_JUNTA.includes(r) ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                        {r}{RESPONSABILIDADES_SOLO_JUNTA.includes(r) ? ' 🔒' : ''}
+                      </span>
                     ))
                   )}
                 </div>

@@ -6,6 +6,7 @@ import DetalleRegistro from './DetalleRegistro'
 import BusquedaAvanzada from './BusquedaAvanzada'
 import PuntosServicio from './PuntosServicio'
 import PanelJunta from './PanelJunta'
+import GestionConsejo from './GestionConsejo'
 
 const ESTADOS_PROCESO = [
   'pendiente_formacion',
@@ -145,6 +146,10 @@ export default function PanelAdmin() {
               Aprobación consagraciones
               {pendientesJunta > 0 && <span className="ml-2 bg-orange-400 text-white text-xs px-1.5 py-0.5 rounded-full">{pendientesJunta}</span>}
             </button>
+            <button onClick={() => setVista('consejo')}
+              className={`text-sm ${vista === 'consejo' ? 'text-white font-medium' : 'text-blue-200 hover:text-white'}`}>
+              Consejos
+            </button>
             <button onClick={cerrarSesion} className="text-xs text-blue-200 hover:text-white ml-4">
               Cerrar sesión
             </button>
@@ -155,7 +160,8 @@ export default function PanelAdmin() {
       {vista === 'busqueda' && <BusquedaAvanzada />}
       {vista === 'puntos' && <PuntosServicio />}
       {vista === 'junta' && <PanelJunta />}
-      {vista !== 'busqueda' && vista !== 'puntos' && vista !== 'junta' && <div className="max-w-7xl mx-auto px-4 py-6">
+      {vista === 'consejo' && <GestionConsejo />}
+      {vista !== 'busqueda' && vista !== 'puntos' && vista !== 'junta' && vista !== 'consejo' && <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Estadísticas */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {[
