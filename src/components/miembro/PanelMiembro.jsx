@@ -531,8 +531,76 @@ export default function PanelMiembro() {
               {guardando ? 'Guardando...' : '💾 Guardar cambios'}
             </button>
           )}
+
+          {/* Cambiar clave */}
+          <CambiarClave sesion={sesion} API_URL={API_URL} />
         </div>
       </div>}
+    </div>
+  )
+}
+
+function CambiarClave({ sesion, API_URL }) {
+  const [abierto, setAbierto] = useState(false)
+  const [claveActual, setClaveActual] = useState('')
+  const [claveNueva, setClaveNueva] = useState('')
+  const [claveConfirm, setClaveConfirm] = useState('')
+  const [guardando, setGuardando] = useState(false)
+  const [mensaje, setMensaje] = useState('')
+
+  const mostrarMensaje = (msg) => { setMensaje(msg); setTimeout(() => setMensaje(''), 4000) }
+
+  const cambiar = async () => {
+    if (!claveActual || !claveNueva || !claveConfirm) return mostrarMensaje('❌ Completa todos los campos')
+    if (claveNueva !== claveConfirm) return mostrarMensaje('❌ Las claves nuevas no coinciden')
+    if (claveNueva.length < 6) return mostrarMensaje('❌ La clave debe tener al menos 6 caracteres')
+    setGuardando(true)
+    const res = await fetch(`${API_URL}/api/miembro/cambiar-clave`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'x-miembro-id': sesion.id },
+      body: JSON.stringify({ claveActual, claveNueva })
+    }).then(r => r.json())
+    if (res.ok) {
+      mostrarMensaje('✅ Clave actualizada correctamente')
+      setClaveActual(''); setClaveNueva(''); setClaveConfirm('')
+      setAbierto(false)
+    } else {
+      mostrarMensaje('❌ ' + (res.mensaje || 'Error al cambiar la clave'))
+    }
+    setGuardando(false)
+  }
+
+  return (
+    <div className="mt-4 bg-white rounded-lg border border-gray-200 p-4">
+      <button onClick={() => setAbierto(!abierto)}
+        className="w-full flex items-center justify-between text-sm font-medium text-gray-700">
+        <span>🔑 Cambiar clave de acceso</span>
+        <span className="text-gray-400">{abierto ? '▲' : '▼'}</span>
+      </button>
+      {abierto && (
+        <div className="mt-4 space-y-3">
+          {mensaje && <p className="text-sm text-center py-2 border rounded-lg">{mensaje}</p>}
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Clave actual</label>
+            <input type="password" value={claveActual} onChange={e => setClaveActual(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Clave nueva</label>
+            <input type="password" value={claveNueva} onChange={e => setClaveNueva(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Confirmar clave nueva</label>
+            <input type="password" value={claveConfirm} onChange={e => setClaveConfirm(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <button onClick={cambiar} disabled={guardando}
+            className="w-full bg-blue-700 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-800 disabled:opacity-50">
+            {guardando ? 'Guardando...' : 'Actualizar clave'}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
