@@ -108,7 +108,8 @@ export default function BusquedaAvanzada({ authHeaders, esPilar = false }) {
   const [mensajeCorreo, setMensajeCorreo] = useState('')
 
   useEffect(() => {
-    fetch(`${API_URL}/api/admin/registros`, {
+    const urlRegistros = esPilar ? `${API_URL}/api/pilar/registros` : `${API_URL}/api/admin/registros`
+    fetch(urlRegistros, {
       headers
     })
       .then(r => r.json())
@@ -120,7 +121,8 @@ export default function BusquedaAvanzada({ authHeaders, esPilar = false }) {
       })
       .catch(() => setCargando(false))
 
-    fetch(`${API_URL}/api/admin/puntos-servicio`, {
+    const urlPuntos = esPilar ? `${API_URL}/api/puntos-servicio` : `${API_URL}/api/admin/puntos-servicio`
+    fetch(urlPuntos, {
       headers
     })
       .then(r => r.json())
