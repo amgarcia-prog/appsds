@@ -234,8 +234,12 @@ export default function PanelObrasServicios() {
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Nuevo punto de servicio</p>
           <p className="text-xs text-gray-400 mb-2">Ciudad: <strong>{sesion.ciudad}</strong></p>
           <input type="text" value={nombreNuevo} onChange={e => setNombreNuevo(e.target.value)}
-            placeholder="Nombre del punto de servicio..."
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3" />
+            placeholder="Ej: Comedor Adultos Padre Pío"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2" />
+          <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 mb-3">
+            <p className="text-xs text-blue-700 font-medium mb-1">💡 Estructura sugerida: Tipo + Población + Nombre</p>
+            <p className="text-xs text-blue-600">Ejemplos: <em>Comedor Adultos Padre Pío · Patio Niños Madre Teresa · Canelazo Jóvenes Divina Misericordia</em></p>
+          </div>
           <div className="flex gap-2">
             <button onClick={crearPunto} disabled={guardandoNuevo || !nombreNuevo.trim()}
               className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
