@@ -5,6 +5,7 @@ import SelectorCiudad from '../ui/SelectorCiudad'
 import API_URL from '../../config.js'
 import PanelFormacion from './PanelFormacion'
 import PanelObrasServicios from './PanelObrasServicios'
+import PanelResponsabilidadesConsejo from './PanelResponsabilidadesConsejo'
 
 const PAISES = [
   'Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica',
@@ -255,6 +256,12 @@ export default function PanelMiembro() {
                     Obras y servicios
                   </button>
                 )}
+                {sesion.roles?.includes('coordinador_consejo') && (
+                  <button onClick={() => setPanelTab('consejo')}
+                    className={`text-xs px-3 py-1.5 ${panelTab === 'consejo' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
+                    Responsabilidades consejo
+                  </button>
+                )}
               </div>
             )}
             <button onClick={() => setModalClave(true)} className="text-xs text-blue-200 hover:text-white">🔑 Clave</button>
@@ -274,6 +281,11 @@ export default function PanelMiembro() {
       {panelTab === 'obras' && (
         <div className="max-w-2xl mx-auto px-4 py-6">
           <PanelObrasServicios />
+        </div>
+      )}
+      {panelTab === 'consejo' && (
+        <div className="max-w-2xl mx-auto px-4 py-6">
+          <PanelResponsabilidadesConsejo />
         </div>
       )}
 
