@@ -102,12 +102,14 @@ export default function PanelObrasServicios() {
   const crearPunto = async () => {
     if (!nombreNuevo.trim()) return
     setGuardandoNuevo(true)
-    const res = await fetch(`${API_URL}/api/obras/puntos-servicio`, {
-      method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre: nombreNuevo.trim() })
-    }).then(r => r.json())
-    if (res.ok) { setNombreNuevo(''); setMostrarFormNuevo(false); await cargarPuntos(); mostrarMensaje('✅ Punto de servicio creado') }
-    else mostrarMensaje('❌ ' + (res.mensaje || 'Error al crear'))
+    try {
+      const res = await fetch(`${API_URL}/api/obras/puntos-servicio`, {
+        method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: nombreNuevo.trim() })
+      }).then(r => r.json())
+      if (res.ok) { setNombreNuevo(''); setMostrarFormNuevo(false); await cargarPuntos(); mostrarMensaje('✅ Punto de servicio creado') }
+      else mostrarMensaje('❌ ' + (res.mensaje || 'Error al crear'))
+    } catch { mostrarMensaje('❌ No se pudo conectar con el servidor') }
     setGuardandoNuevo(false)
   }
 
