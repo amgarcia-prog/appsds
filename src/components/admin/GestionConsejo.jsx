@@ -110,9 +110,9 @@ export default function GestionConsejo() {
     const nombre = `${miembro.primer_nombre} ${miembro.primer_apellido}`
     const respsActuales = miembro.responsabilidades_consejo || []
     try {
-      const res = await fetch(`${API_URL}/api/consejo/miembro/${miembro.id}/responsabilidades`, {
-        method: 'PUT', headers: { ...ADMIN_HEADERS },
-        body: JSON.stringify({ responsabilidades: respsActuales.filter(r => r !== rol) })
+      const res = await fetch(`${API_URL}/api/admin/consejo/miembro/${miembro.id}/quitar-coordinador`, {
+        method: 'PUT', headers: ADMIN_HEADERS,
+        body: JSON.stringify({ rol })
       }).then(r => r.json())
       if (res.ok) { await cargar(ciudad); mostrarMensaje(`✅ Rol de ${rol} quitado a ${nombre}`) }
       else mostrarMensaje('❌ ' + (res.mensaje || 'Error al quitar'))
