@@ -91,7 +91,8 @@ const FILTROS_VACIO = {
   paisResidencia: '', ciudadServicio: '', fechaDesde: '', fechaHasta: '',
 }
 
-export default function BusquedaAvanzada() {
+export default function BusquedaAvanzada({ authHeaders, esPilar = false }) {
+  const headers = authHeaders || { 'x-admin-key': 'SDS2026admin' }
   const [todos, setTodos] = useState([])
   const [resultados, setResultados] = useState([])
   const [buscado, setBuscado] = useState(false)
@@ -101,10 +102,14 @@ export default function BusquedaAvanzada() {
   const [mostrarColumnas, setMostrarColumnas] = useState(false)
   const [ciudades, setCiudades] = useState([])
   const [puntosBD, setPuntosBD] = useState([])
+  const [asunto, setAsunto] = useState('')
+  const [cuerpo, setCuerpo] = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const [mensajeCorreo, setMensajeCorreo] = useState('')
 
   useEffect(() => {
     fetch(`${API_URL}/api/admin/registros`, {
-      headers: { 'x-admin-key': 'SDS2026admin' }
+      headers
     })
       .then(r => r.json())
       .then(data => {
@@ -116,7 +121,7 @@ export default function BusquedaAvanzada() {
       .catch(() => setCargando(false))
 
     fetch(`${API_URL}/api/admin/puntos-servicio`, {
-      headers: { 'x-admin-key': 'SDS2026admin' }
+      headers
     })
       .then(r => r.json())
       .then(data => setPuntosBD(data.map(p => p.nombre).sort()))
@@ -199,6 +204,28 @@ export default function BusquedaAvanzada() {
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Registros')
     XLSX.writeFile(wb, `registros_sds_${new Date().toISOString().slice(0,10)}.xlsx`)
+  }
+
+  const enviarCorreo = async () => {
+    if (!asunto.trim() || !cuerpo.trim()) return setMensajeCorreo('❌ Completa el asunto y el cuerpo del mensaje')
+    const correos = resultados.map(r => r.correo_electronico).filter(Boolean)
+    if (correos.length === 0) return setMensajeCorreo('❌ Ningún miembro de los resultados tiene correo registrado')
+    if (!confirm(`¿Enviar correo a ${correos.length} miembro(s)?`)) return
+    setEnviando(true)
+    setMensajeCorreo('')
+    try {
+      const res = await fetch(`${API_URL}/api/admin/enviar-correo-masivo`, {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ asunto, cuerpo, correos })
+      }).then(r => r.json())
+      if (res.ok) {
+        setMensajeCorreo(`✅ Correo enviado a ${res.enviados} miembro(s)${res.errores > 0 ? `, ${res.errores} con error` : ''}`)
+        setAsunto('')
+        setCuerpo('')
+      } else setMensajeCorreo('❌ ' + (res.mensaje || 'Error al enviar'))
+    } catch { setMensajeCorreo('❌ No se pudo conectar con el servidor') }
+    setEnviando(false)
   }
 
   const columnasVisibles = TODAS_COLUMNAS.filter(c => columnasSeleccionadas.includes(c.key))
@@ -306,7 +333,7 @@ export default function BusquedaAvanzada() {
       {buscado && (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 flex-wrap gap-2">
-            <p className="text-sm text-gray-600 font-medium">{resultados.length} resultado(s)</p>
+            <p className="text-sm text-gray-600 font-medium">{resultados.length} resultado(s) · {resultados.filter(r => r.correo_electronico).length} con correo</p>
             <div className="flex items-center gap-3">
               {/* Selector de columnas */}
               <div className="relative">
@@ -377,6 +404,30 @@ export default function BusquedaAvanzada() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {buscado && resultados.length > 0 && (
+        <div className="bg-white rounded-lg border border-blue-200 p-5 mt-4">
+          <p className="text-sm font-bold text-blue-800 mb-1">Enviar correo a estos {resultados.filter(r => r.correo_electronico).length} miembro(s)</p>
+          <p className="text-xs text-gray-400 mb-4">Se enviará a todos los que tengan correo registrado en los resultados actuales.</p>
+          {mensajeCorreo && <p className="text-sm text-center py-2 bg-gray-50 border rounded-lg mb-3">{mensajeCorreo}</p>}
+          <div className="mb-3">
+            <label className="block text-xs font-medium text-gray-600 mb-1">Asunto</label>
+            <input type="text" value={asunto} onChange={e => setAsunto(e.target.value)}
+              placeholder="Asunto del correo..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div className="mb-4">
+            <label className="block text-xs font-medium text-gray-600 mb-1">Mensaje</label>
+            <textarea value={cuerpo} onChange={e => setCuerpo(e.target.value)} rows={5}
+              placeholder="Escribe el mensaje aquí..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+          </div>
+          <button onClick={enviarCorreo} disabled={enviando || !asunto.trim() || !cuerpo.trim()}
+            className="bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-blue-800 disabled:opacity-50">
+            {enviando ? 'Enviando...' : '✉️ Enviar correo'}
+          </button>
         </div>
       )}
     </div>
