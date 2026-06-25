@@ -78,6 +78,7 @@ export default function PanelMiembro() {
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState('')
   const [panelTab, setPanelTab] = useState('perfil')
+  const [modalClave, setModalClave] = useState(false)
   const [pestaña, setPestaña] = useState('perfil')
   const [pasoConsagracion, setPasoConsagracion] = useState('inicio') // 'inicio' | 'motivacion' | 'enviado'
   const [motivacion, setMotivacion] = useState('')
@@ -256,10 +257,14 @@ export default function PanelMiembro() {
                 )}
               </div>
             )}
+            <button onClick={() => setModalClave(true)} className="text-xs text-blue-200 hover:text-white">🔑 Clave</button>
             <button onClick={cerrarSesion} className="text-xs text-blue-200 hover:text-white">Cerrar sesión</button>
           </div>
         </div>
       </div>
+
+      {/* Modal cambiar clave */}
+      {modalClave && <CambiarClave sesion={sesion} API_URL={API_URL} onCerrar={() => setModalClave(false)} />}
 
       {panelTab === 'formacion' && (
         <div className="max-w-2xl mx-auto px-4 py-6">
@@ -532,75 +537,83 @@ export default function PanelMiembro() {
             </button>
           )}
 
-          {/* Cambiar clave */}
-          <CambiarClave sesion={sesion} API_URL={API_URL} />
         </div>
       </div>}
     </div>
   )
 }
 
-function CambiarClave({ sesion, API_URL }) {
-  const [abierto, setAbierto] = useState(false)
+function CambiarClave({ sesion, API_URL, onCerrar }) {
   const [claveActual, setClaveActual] = useState('')
   const [claveNueva, setClaveNueva] = useState('')
   const [claveConfirm, setClaveConfirm] = useState('')
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState('')
-
-  const mostrarMensaje = (msg) => { setMensaje(msg); setTimeout(() => setMensaje(''), 4000) }
+  const [exito, setExito] = useState(false)
 
   const cambiar = async () => {
-    if (!claveActual || !claveNueva || !claveConfirm) return mostrarMensaje('❌ Completa todos los campos')
-    if (claveNueva !== claveConfirm) return mostrarMensaje('❌ Las claves nuevas no coinciden')
-    if (claveNueva.length < 6) return mostrarMensaje('❌ La clave debe tener al menos 6 caracteres')
+    if (!claveActual || !claveNueva || !claveConfirm) return setMensaje('❌ Completa todos los campos')
+    if (claveNueva !== claveConfirm) return setMensaje('❌ Las claves nuevas no coinciden')
+    if (claveNueva.length < 6) return setMensaje('❌ La clave debe tener al menos 6 caracteres')
     setGuardando(true)
-    const res = await fetch(`${API_URL}/api/miembro/cambiar-clave`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'x-miembro-id': sesion.id },
-      body: JSON.stringify({ claveActual, claveNueva })
-    }).then(r => r.json())
-    if (res.ok) {
-      mostrarMensaje('✅ Clave actualizada correctamente')
-      setClaveActual(''); setClaveNueva(''); setClaveConfirm('')
-      setAbierto(false)
-    } else {
-      mostrarMensaje('❌ ' + (res.mensaje || 'Error al cambiar la clave'))
-    }
+    try {
+      const res = await fetch(`${API_URL}/api/miembro/cambiar-clave`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-miembro-id': sesion.id },
+        body: JSON.stringify({ claveActual, claveNueva })
+      }).then(r => r.json())
+      if (res.ok) {
+        setExito(true)
+      } else {
+        setMensaje('❌ ' + (res.mensaje || 'Error al cambiar la clave'))
+      }
+    } catch { setMensaje('❌ No se pudo conectar con el servidor') }
     setGuardando(false)
   }
 
   return (
-    <div className="mt-4 bg-white rounded-lg border border-gray-200 p-4">
-      <button onClick={() => setAbierto(!abierto)}
-        className="w-full flex items-center justify-between text-sm font-medium text-gray-700">
-        <span>🔑 Cambiar clave de acceso</span>
-        <span className="text-gray-400">{abierto ? '▲' : '▼'}</span>
-      </button>
-      {abierto && (
-        <div className="mt-4 space-y-3">
-          {mensaje && <p className="text-sm text-center py-2 border rounded-lg">{mensaje}</p>}
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Clave actual</label>
-            <input type="password" value={claveActual} onChange={e => setClaveActual(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+        {exito ? (
+          <div className="text-center">
+            <p className="text-4xl mb-4">✅</p>
+            <p className="font-semibold text-gray-800 mb-2">Su clave se ha modificado correctamente</p>
+            <p className="text-sm text-gray-500 mb-6">Utilice esta clave en su próximo ingreso.</p>
+            <button onClick={onCerrar} className="w-full bg-blue-700 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-800">
+              Cerrar
+            </button>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Clave nueva</label>
-            <input type="password" value={claveNueva} onChange={e => setClaveNueva(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Confirmar clave nueva</label>
-            <input type="password" value={claveConfirm} onChange={e => setClaveConfirm(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-          <button onClick={cambiar} disabled={guardando}
-            className="w-full bg-blue-700 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-800 disabled:opacity-50">
-            {guardando ? 'Guardando...' : 'Actualizar clave'}
-          </button>
-        </div>
-      )}
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-blue-800 text-lg">Cambiar clave</h2>
+              <button onClick={onCerrar} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+            </div>
+            {mensaje && <p className="text-sm text-center py-2 bg-red-50 border border-red-200 rounded-lg mb-3">{mensaje}</p>}
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Clave actual</label>
+                <input type="password" value={claveActual} onChange={e => setClaveActual(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Clave nueva</label>
+                <input type="password" value={claveNueva} onChange={e => setClaveNueva(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Confirmar clave nueva</label>
+                <input type="password" value={claveConfirm} onChange={e => setClaveConfirm(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <button onClick={cambiar} disabled={guardando}
+                className="w-full bg-blue-700 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-800 disabled:opacity-50">
+                {guardando ? 'Guardando...' : 'Actualizar clave'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }
