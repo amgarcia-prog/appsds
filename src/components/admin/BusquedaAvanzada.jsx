@@ -108,9 +108,8 @@ export default function BusquedaAvanzada({ authHeaders, esPilar = false }) {
   const [mensajeCorreo, setMensajeCorreo] = useState('')
 
   useEffect(() => {
-    const urlRegistros = esPilar ? `${API_URL}/api/pilar/registros` : `${API_URL}/api/admin/registros`
-    fetch(urlRegistros, {
-      headers
+    fetch(`${API_URL}/api/admin/registros`, {
+      headers: { 'x-admin-key': 'SDS2026admin' }
     })
       .then(r => r.json())
       .then(data => {
@@ -121,9 +120,8 @@ export default function BusquedaAvanzada({ authHeaders, esPilar = false }) {
       })
       .catch(() => setCargando(false))
 
-    const urlPuntos = esPilar ? `${API_URL}/api/puntos-servicio` : `${API_URL}/api/admin/puntos-servicio`
-    fetch(urlPuntos, {
-      headers
+    fetch(`${API_URL}/api/admin/puntos-servicio`, {
+      headers: { 'x-admin-key': 'SDS2026admin' }
     })
       .then(r => r.json())
       .then(data => setPuntosBD(data.map(p => p.nombre).sort()))
