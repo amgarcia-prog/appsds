@@ -227,7 +227,8 @@ export default function PanelCIO() {
                     <div className="flex items-start justify-between">
                       <button onClick={() => seleccionarProyecto(p)} className="text-left flex-1">
                         <p className="font-semibold text-gray-800 mb-1">{p.concepto}</p>
-                        <div className="flex gap-4 text-xs text-gray-500">
+                        <div className="flex gap-4 text-xs text-gray-500 flex-wrap">
+                          {p.fecha_inicio && <span>Inicio: <span className="font-medium text-gray-700">{fmtFecha(p.fecha_inicio)}</span></span>}
                           <span>Contratado: <span className="font-medium text-gray-700">{fmt(contratado)}</span></span>
                           <span>Facturado: <span className="font-medium text-green-700">{fmt(facturado)}</span></span>
                           <span>Horas: <span className="font-medium text-blue-700">{horas}h</span></span>
@@ -538,6 +539,11 @@ function FormProyecto({ initial, onGuardar }) {
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">Concepto / descripción *</label>
         <input value={form.concepto} onChange={e => set('concepto', e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">Fecha de inicio</label>
+        <input type="date" value={form.fecha_inicio || ''} onChange={e => set('fecha_inicio', e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
       <p className="text-xs text-gray-400">El valor total del proyecto se calcula automáticamente a partir de los productos/servicios.</p>
