@@ -131,8 +131,9 @@ export default function PanelCIO() {
 
   // CRUD tiempo
   const guardarTiempo = async (form) => {
+    const url = form.id ? `${API_URL}/api/cio/tiempo/${form.id}` : `${API_URL}/api/cio/tiempo`
     const body = { ...form, proyecto_id: proyectoSel.id }
-    const res = await fetch(`${API_URL}/api/cio/tiempo`, { method: 'POST', headers: H, body: JSON.stringify(body) }).then(r => r.json())
+    const res = await fetch(url, { method: form.id ? 'PUT' : 'POST', headers: H, body: JSON.stringify(body) }).then(r => r.json())
     if (res.ok) { await refrescarYSincronizar(); setModalTiempo(null); msg('✅ Registro guardado') }
     else msg('❌ ' + (res.mensaje || 'Error'))
   }
@@ -380,7 +381,8 @@ export default function PanelCIO() {
                           <td className="px-4 py-2 text-xs text-blue-700">{prod ? prod.concepto : '—'}</td>
                           <td className="px-4 py-2 text-gray-700">{r.con_quien || '—'}</td>
                           <td className="px-4 py-2 text-gray-700 max-w-xs truncate">{r.actividad || '—'}</td>
-                          <td className="px-4 py-2 text-right">
+                          <td className="px-4 py-2 text-right whitespace-nowrap">
+                            <button onClick={() => setModalTiempo(r)} className="text-xs text-blue-500 hover:underline mr-2">Editar</button>
                             <button onClick={() => eliminarTiempo(r.id)} className="text-xs text-red-500 hover:underline">✕</button>
                           </td>
                         </tr>
@@ -415,7 +417,7 @@ export default function PanelCIO() {
         </Modal>
       )}
       {modalTiempo && (
-        <Modal titulo="Registrar tiempo" onClose={() => setModalTiempo(null)}>
+        <Modal titulo={modalTiempo.id ? 'Editar registro de tiempo' : 'Registrar tiempo'} onClose={() => setModalTiempo(null)}>
           <FormTiempo initial={modalTiempo} productos={productos} onGuardar={guardarTiempo} />
         </Modal>
       )}
