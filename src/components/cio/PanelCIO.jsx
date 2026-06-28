@@ -282,18 +282,23 @@ export default function PanelCIO() {
                     <tr>
                       <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Concepto</th>
                       <th className="text-right px-4 py-2 text-xs font-medium text-gray-500">Valor</th>
-                      <th className="text-right px-4 py-2 text-xs font-medium text-gray-500">Horas</th>
+                      <th className="text-right px-4 py-2 text-xs font-medium text-gray-500">H. estimadas</th>
+                      <th className="text-right px-4 py-2 text-xs font-medium text-gray-500">H. consumidas</th>
                       <th className="px-4 py-2"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {productos.map(prod => {
-                      const horasProd = horasTotal((proyectoSel.cio_registros_tiempo || []).filter(r => r.producto_id === prod.id))
+                      const horasProd = parseFloat(horasTotal((proyectoSel.cio_registros_tiempo || []).filter(r => r.producto_id === prod.id)))
+                      const excedido = prod.horas_estimadas && horasProd > prod.horas_estimadas
                       return (
                         <tr key={prod.id}>
                           <td className="px-4 py-2 text-gray-800 font-medium">{prod.concepto}</td>
                           <td className="px-4 py-2 text-right text-blue-700 font-medium">{fmt(prod.valor)}</td>
-                          <td className="px-4 py-2 text-right text-purple-600">{horasProd}h</td>
+                          <td className="px-4 py-2 text-right text-gray-500">{prod.horas_estimadas ? `${prod.horas_estimadas}h` : '—'}</td>
+                          <td className={`px-4 py-2 text-right font-medium ${excedido ? 'text-red-600' : 'text-purple-600'}`}>
+                            {horasProd}h{excedido ? ' ⚠️' : ''}
+                          </td>
                           <td className="px-4 py-2 text-right">
                             <button onClick={() => setModalProducto(prod)} className="text-xs text-blue-500 hover:underline mr-2">Editar</button>
                             <button onClick={() => eliminarProducto(prod.id)} className="text-xs text-red-500 hover:underline">✕</button>
