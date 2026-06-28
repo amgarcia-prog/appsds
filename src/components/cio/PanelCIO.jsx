@@ -421,7 +421,7 @@ export default function PanelCIO() {
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   Registro de tiempo — <span className="text-purple-700">{horasTotal(proyectoSel.cio_registros_tiempo)}h total</span>
                 </p>
-                <button onClick={() => setModalTiempo({ fecha: '', hora_inicio: '', hora_fin: '', con_quien: '', actividad: '', producto_id: '' })}
+                <button onClick={() => setModalTiempo({ fecha: new Date().toISOString().slice(0, 10), hora_inicio: '', hora_fin: '', con_quien: '', actividad: '', producto_id: '' })}
                   className="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700">
                   + Registrar
                 </button>
@@ -492,6 +492,7 @@ export default function PanelCIO() {
           <FormTiempo initial={modalTiempo} productos={productos} onGuardar={guardarTiempo} />
         </Modal>
       )}
+
     </div>
   )
 }
