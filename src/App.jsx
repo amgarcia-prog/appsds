@@ -7,6 +7,12 @@ import LoginMiembro from './components/miembro/LoginMiembro'
 import PanelFormacion from './components/miembro/PanelFormacion'
 import PanelMiembro from './components/miembro/PanelMiembro'
 import RutaProtegidaMiembro from './components/miembro/RutaProtegidaMiembro'
+import LoginCIO from './components/cio/LoginCIO'
+import PanelCIO from './components/cio/PanelCIO'
+
+const RutaCIO = ({ children }) => {
+  return localStorage.getItem('cio_sesion') === 'ok' ? children : <Navigate to="/cio/login" />
+}
 
 function App() {
   return (
@@ -30,6 +36,8 @@ function App() {
             <PanelMiembro />
           </RutaProtegidaMiembro>
         } />
+        <Route path="/cio/login" element={<LoginCIO />} />
+        <Route path="/cio" element={<RutaCIO><PanelCIO /></RutaCIO>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
