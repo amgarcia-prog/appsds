@@ -325,24 +325,41 @@ export default function PanelCIO() {
                       ...productos.map(p => ({
                         label: p.concepto,
                         horas: grupos[p.id] || 0,
+                        estimadas: p.horas_estimadas || 0,
                         color: 'bg-blue-500'
                       })),
-                      ...(grupos['__sin__'] ? [{ label: 'Sin producto asignado', horas: grupos['__sin__'], color: 'bg-gray-300' }] : [])
+                      ...(grupos['__sin__'] ? [{ label: 'Sin producto asignado', horas: grupos['__sin__'], estimadas: 0, color: 'bg-gray-300' }] : [])
                     ].filter(f => f.horas > 0)
 
                     return filas.map((f, i) => {
-                      const pct = totalHoras > 0 ? Math.round((f.horas / totalHoras) * 100) : 0
+                      const tieneEstimado = f.estimadas > 0
+                      const pctBarra = tieneEstimado
+                        ? Math.min(Math.round((f.horas / f.estimadas) * 100), 100)
+                        : totalHoras > 0 ? Math.round((f.horas / totalHoras) * 100) : 0
+                      const pctReal = tieneEstimado ? Math.round((f.horas / f.estimadas) * 100) : null
+                      const excedido = tieneEstimado && f.horas > f.estimadas
+                      const barColor = excedido ? 'bg-red-500' : tieneEstimado ? 'bg-blue-500' : 'bg-purple-400'
                       return (
                         <div key={i}>
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-sm text-gray-700 truncate flex-1 mr-4">{f.label}</span>
-                            <div className="flex items-center gap-3 flex-shrink-0">
+                            <div className="flex items-center gap-2 flex-shrink-0">
                               <span className="text-sm font-semibold text-purple-700">{f.horas.toFixed(1)}h</span>
-                              <span className="text-xs text-gray-400 w-8 text-right">{pct}%</span>
+                              {tieneEstimado && (
+                                <span className="text-xs text-gray-400">de {f.estimadas}h</span>
+                              )}
+                              {pctReal !== null && (
+                                <span className={`text-xs font-semibold w-14 text-right ${excedido ? 'text-red-600' : 'text-gray-500'}`}>
+                                  {pctReal}%{excedido ? ' ⚠️' : ''}
+                                </span>
+                              )}
+                              {pctReal === null && (
+                                <span className="text-xs text-gray-400 w-8 text-right">{pctBarra}%</span>
+                              )}
                             </div>
                           </div>
                           <div className="w-full bg-gray-100 rounded-full h-2">
-                            <div className={`${f.color} h-2 rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                            <div className={`${barColor} h-2 rounded-full transition-all`} style={{ width: `${pctBarra}%` }} />
                           </div>
                         </div>
                       )
@@ -538,11 +555,19 @@ function FormProducto({ initial, onGuardar }) {
           placeholder="Nombre del producto o servicio..."
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
-      <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Valor (0 si es sin costo)</label>
-        <input type="number" value={form.valor} onChange={e => set('valor', e.target.value)}
-          placeholder="0"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Valor (0 si es sin costo)</label>
+          <input type="number" value={form.valor} onChange={e => set('valor', e.target.value)}
+            placeholder="0"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Horas estimadas</label>
+          <input type="number" step="0.5" value={form.horas_estimadas || ''} onChange={e => set('horas_estimadas', e.target.value)}
+            placeholder="Opcional"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
       </div>
       <button onClick={() => onGuardar(form)} disabled={!form.concepto}
         className="w-full bg-blue-700 text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-800 disabled:opacity-50">
