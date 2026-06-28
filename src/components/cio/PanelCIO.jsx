@@ -306,6 +306,52 @@ export default function PanelCIO() {
               )}
             </div>
 
+            {/* Resumen por producto */}
+            {(proyectoSel.cio_registros_tiempo || []).length > 0 && (
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-4 py-3 border-b border-gray-100">
+                  Consumo de tiempo por producto
+                </p>
+                <div className="px-4 py-3 space-y-3">
+                  {(() => {
+                    const totalHoras = parseFloat(horasTotal(proyectoSel.cio_registros_tiempo))
+                    const grupos = {}
+                    ;(proyectoSel.cio_registros_tiempo || []).forEach(r => {
+                      const key = r.producto_id || '__sin__'
+                      if (!grupos[key]) grupos[key] = 0
+                      grupos[key] += r.horas || 0
+                    })
+                    const filas = [
+                      ...productos.map(p => ({
+                        label: p.concepto,
+                        horas: grupos[p.id] || 0,
+                        color: 'bg-blue-500'
+                      })),
+                      ...(grupos['__sin__'] ? [{ label: 'Sin producto asignado', horas: grupos['__sin__'], color: 'bg-gray-300' }] : [])
+                    ].filter(f => f.horas > 0)
+
+                    return filas.map((f, i) => {
+                      const pct = totalHoras > 0 ? Math.round((f.horas / totalHoras) * 100) : 0
+                      return (
+                        <div key={i}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm text-gray-700 truncate flex-1 mr-4">{f.label}</span>
+                            <div className="flex items-center gap-3 flex-shrink-0">
+                              <span className="text-sm font-semibold text-purple-700">{f.horas.toFixed(1)}h</span>
+                              <span className="text-xs text-gray-400 w-8 text-right">{pct}%</span>
+                            </div>
+                          </div>
+                          <div className="w-full bg-gray-100 rounded-full h-2">
+                            <div className={`${f.color} h-2 rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      )
+                    })
+                  })()}
+                </div>
+              </div>
+            )}
+
             {/* Items facturación */}
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-4">
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
