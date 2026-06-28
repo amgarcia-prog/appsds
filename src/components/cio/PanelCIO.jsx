@@ -250,14 +250,16 @@ export default function PanelCIO() {
         {vista === 'proyecto' && proyectoSel && (
           <>
             {/* Totales */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
               {[
+                { label: 'Fecha de inicio', valor: proyectoSel.fecha_inicio ? fmtFecha(proyectoSel.fecha_inicio) : '—', color: 'text-gray-700' },
                 { label: 'Valor contratado', valor: fmt(valorProductos(proyectoSel.cio_productos)), color: 'text-blue-700' },
                 { label: 'Total facturado', valor: fmt(facturadoTotal(proyectoSel.cio_items_facturacion)), color: 'text-green-700' },
+                { label: 'Horas estimadas', valor: (() => { const t = (proyectoSel.cio_productos || []).reduce((s, p) => s + (p.horas_estimadas || 0), 0); return t > 0 ? t + 'h' : '—' })(), color: 'text-orange-600' },
                 { label: 'Horas dedicadas', valor: horasTotal(proyectoSel.cio_registros_tiempo) + 'h', color: 'text-purple-700' },
               ].map(({ label, valor, color }) => (
                 <div key={label} className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-                  <p className={`text-xl font-bold ${color}`}>{valor}</p>
+                  <p className={`text-lg font-bold ${color}`}>{valor}</p>
                   <p className="text-xs text-gray-500 mt-1">{label}</p>
                 </div>
               ))}
