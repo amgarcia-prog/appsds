@@ -231,7 +231,8 @@ export default function PanelCIO() {
                           {p.fecha_inicio && <span>Inicio: <span className="font-medium text-gray-700">{fmtFecha(p.fecha_inicio)}</span></span>}
                           <span>Contratado: <span className="font-medium text-gray-700">{fmt(contratado)}</span></span>
                           <span>Facturado: <span className="font-medium text-green-700">{fmt(facturado)}</span></span>
-                          <span>Horas: <span className="font-medium text-blue-700">{horas}h</span></span>
+                          {(() => { const t = (p.cio_productos || []).reduce((s, pr) => s + (pr.horas_estimadas || 0), 0); return t > 0 ? <span>Estimadas: <span className="font-medium text-orange-600">{t}h</span></span> : null })()}
+                          <span>Dedicadas: <span className="font-medium text-blue-700">{horas}h</span></span>
                         </div>
                       </button>
                       <div className="flex gap-3 ml-4">
