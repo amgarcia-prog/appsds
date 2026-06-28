@@ -7,7 +7,13 @@ const H = { 'x-cio-key': 'CIO2026', 'Content-Type': 'application/json' }
 const fmt = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n || 0)
 const fmtFecha = (f) => f ? new Date(f + 'T12:00:00').toLocaleDateString('es-CO') : ''
 const horasTotal = (registros) => (registros || []).reduce((s, r) => s + (r.horas || 0), 0).toFixed(1)
-const facturadoTotal = (items) => (items || []).reduce((s, i) => s + (i.valor_facturado || 0), 0)
+const facturadoTotal = (items) => (items || []).reduce((s, i) => s + Number(i.valor_facturado || 0), 0)
+const valorProductos = (productos) => (productos || []).reduce((s, p) => s + Number(p.valor || 0), 0)
+
+const recargarProyectos = async (clienteId) => {
+  const data = await fetch(`${API_URL}/api/cio/proyectos/${clienteId}`, { headers: H }).then(r => r.json())
+  return Array.isArray(data) ? data : []
+}
 
 export default function PanelCIO() {
   const navigate = useNavigate()
@@ -15,12 +21,12 @@ export default function PanelCIO() {
   const [clienteSel, setClienteSel] = useState(null)
   const [proyectos, setProyectos] = useState([])
   const [proyectoSel, setProyectoSel] = useState(null)
-  const [vista, setVista] = useState('clientes') // clientes | proyecto
+  const [vista, setVista] = useState('clientes')
   const [mensaje, setMensaje] = useState('')
 
-  // Modales / forms
-  const [modalCliente, setModalCliente] = useState(null) // null | {nit, nombre} | cliente
+  const [modalCliente, setModalCliente] = useState(null)
   const [modalProyecto, setModalProyecto] = useState(null)
+  const [modalProducto, setModalProducto] = useState(null)
   const [modalItem, setModalItem] = useState(null)
   const [modalTiempo, setModalTiempo] = useState(null)
 
@@ -33,16 +39,28 @@ export default function PanelCIO() {
     setClientes(Array.isArray(data) ? data : [])
   }
 
-  const cargarProyectos = async (clienteId) => {
-    const data = await fetch(`${API_URL}/api/cio/proyectos/${clienteId}`, { headers: H }).then(r => r.json())
-    setProyectos(Array.isArray(data) ? data : [])
+  const refrescar = async () => {
+    if (!clienteSel) return []
+    const data = await recargarProyectos(clienteSel.id)
+    setProyectos(data)
+    return data
   }
 
-  const seleccionarCliente = (c) => {
+  const refrescarYSincronizar = async () => {
+    const data = await refrescar()
+    if (proyectoSel) {
+      const p = data.find(x => x.id === proyectoSel.id)
+      if (p) setProyectoSel(p)
+    }
+    return data
+  }
+
+  const seleccionarCliente = async (c) => {
     setClienteSel(c)
     setProyectoSel(null)
     setVista('proyectos')
-    cargarProyectos(c.id)
+    const data = await recargarProyectos(c.id)
+    setProyectos(data)
   }
 
   const seleccionarProyecto = (p) => {
@@ -50,15 +68,10 @@ export default function PanelCIO() {
     setVista('proyecto')
   }
 
-  const refrescarProyecto = async () => {
-    await cargarProyectos(clienteSel.id)
-  }
-
   // CRUD clientes
   const guardarCliente = async (form) => {
     const url = form.id ? `${API_URL}/api/cio/clientes/${form.id}` : `${API_URL}/api/cio/clientes`
-    const method = form.id ? 'PUT' : 'POST'
-    const res = await fetch(url, { method, headers: H, body: JSON.stringify(form) }).then(r => r.json())
+    const res = await fetch(url, { method: form.id ? 'PUT' : 'POST', headers: H, body: JSON.stringify(form) }).then(r => r.json())
     if (res.ok) { await cargarClientes(); setModalCliente(null); msg('✅ Cliente guardado') }
     else msg('❌ ' + (res.mensaje || 'Error'))
   }
@@ -72,41 +85,47 @@ export default function PanelCIO() {
   // CRUD proyectos
   const guardarProyecto = async (form) => {
     const url = form.id ? `${API_URL}/api/cio/proyectos/${form.id}` : `${API_URL}/api/cio/proyectos`
-    const method = form.id ? 'PUT' : 'POST'
     const body = { ...form, cliente_id: clienteSel.id }
-    const res = await fetch(url, { method, headers: H, body: JSON.stringify(body) }).then(r => r.json())
-    if (res.ok) { await cargarProyectos(clienteSel.id); setModalProyecto(null); msg('✅ Proyecto guardado') }
+    const res = await fetch(url, { method: form.id ? 'PUT' : 'POST', headers: H, body: JSON.stringify(body) }).then(r => r.json())
+    if (res.ok) { await refrescar(); setModalProyecto(null); msg('✅ Proyecto guardado') }
     else msg('❌ ' + (res.mensaje || 'Error'))
   }
 
   const eliminarProyecto = async (id) => {
     if (!confirm('¿Eliminar este proyecto?')) return
     const res = await fetch(`${API_URL}/api/cio/proyectos/${id}`, { method: 'DELETE', headers: H }).then(r => r.json())
-    if (res.ok) { await cargarProyectos(clienteSel.id); setVista('proyectos'); setProyectoSel(null); msg('✅ Proyecto eliminado') }
+    if (res.ok) { await refrescar(); setVista('proyectos'); setProyectoSel(null); msg('✅ Proyecto eliminado') }
   }
 
-  // CRUD items
+  // CRUD productos
+  const guardarProducto = async (form) => {
+    const url = form.id ? `${API_URL}/api/cio/productos/${form.id}` : `${API_URL}/api/cio/productos`
+    const body = { ...form, proyecto_id: proyectoSel.id }
+    const res = await fetch(url, { method: form.id ? 'PUT' : 'POST', headers: H, body: JSON.stringify(body) }).then(r => r.json())
+    if (res.ok) { await refrescarYSincronizar(); setModalProducto(null); msg('✅ Producto guardado') }
+    else msg('❌ ' + (res.mensaje || 'Error'))
+  }
+
+  const eliminarProducto = async (id) => {
+    if (!confirm('¿Eliminar este producto/servicio?')) return
+    await fetch(`${API_URL}/api/cio/productos/${id}`, { method: 'DELETE', headers: H })
+    await refrescarYSincronizar()
+    msg('✅ Producto eliminado')
+  }
+
+  // CRUD items facturación
   const guardarItem = async (form) => {
     const url = form.id ? `${API_URL}/api/cio/items/${form.id}` : `${API_URL}/api/cio/items`
-    const method = form.id ? 'PUT' : 'POST'
     const body = { ...form, proyecto_id: proyectoSel.id }
-    const res = await fetch(url, { method, headers: H, body: JSON.stringify(body) }).then(r => r.json())
-    if (res.ok) {
-      await refrescarProyecto()
-      const updated = (await fetch(`${API_URL}/api/cio/proyectos/${clienteSel.id}`, { headers: H }).then(r => r.json()))
-      const p = updated.find(x => x.id === proyectoSel.id)
-      if (p) setProyectoSel(p)
-      setModalItem(null); msg('✅ Item guardado')
-    } else msg('❌ ' + (res.mensaje || 'Error'))
+    const res = await fetch(url, { method: form.id ? 'PUT' : 'POST', headers: H, body: JSON.stringify(body) }).then(r => r.json())
+    if (res.ok) { await refrescarYSincronizar(); setModalItem(null); msg('✅ Item guardado') }
+    else msg('❌ ' + (res.mensaje || 'Error'))
   }
 
   const eliminarItem = async (id) => {
     if (!confirm('¿Eliminar este item?')) return
     await fetch(`${API_URL}/api/cio/items/${id}`, { method: 'DELETE', headers: H })
-    const updated = await fetch(`${API_URL}/api/cio/proyectos/${clienteSel.id}`, { headers: H }).then(r => r.json())
-    const p = updated.find(x => x.id === proyectoSel.id)
-    if (p) setProyectoSel(p)
-    setProyectos(updated)
+    await refrescarYSincronizar()
     msg('✅ Item eliminado')
   }
 
@@ -114,46 +133,38 @@ export default function PanelCIO() {
   const guardarTiempo = async (form) => {
     const body = { ...form, proyecto_id: proyectoSel.id }
     const res = await fetch(`${API_URL}/api/cio/tiempo`, { method: 'POST', headers: H, body: JSON.stringify(body) }).then(r => r.json())
-    if (res.ok) {
-      const updated = await fetch(`${API_URL}/api/cio/proyectos/${clienteSel.id}`, { headers: H }).then(r => r.json())
-      const p = updated.find(x => x.id === proyectoSel.id)
-      if (p) setProyectoSel(p)
-      setProyectos(updated)
-      setModalTiempo(null); msg('✅ Registro guardado')
-    } else msg('❌ ' + (res.mensaje || 'Error'))
+    if (res.ok) { await refrescarYSincronizar(); setModalTiempo(null); msg('✅ Registro guardado') }
+    else msg('❌ ' + (res.mensaje || 'Error'))
   }
 
   const eliminarTiempo = async (id) => {
     if (!confirm('¿Eliminar este registro?')) return
     await fetch(`${API_URL}/api/cio/tiempo/${id}`, { method: 'DELETE', headers: H })
-    const updated = await fetch(`${API_URL}/api/cio/proyectos/${clienteSel.id}`, { headers: H }).then(r => r.json())
-    const p = updated.find(x => x.id === proyectoSel.id)
-    if (p) setProyectoSel(p)
-    setProyectos(updated)
+    await refrescarYSincronizar()
     msg('✅ Registro eliminado')
   }
+
+  const productos = proyectoSel?.cio_productos || []
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-blue-800 text-white py-3 px-4 shadow-md">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-base font-bold">CIO — Business Process Transformation</h1>
-              <div className="flex items-center gap-2 text-xs text-blue-200">
-                <button onClick={() => { setVista('clientes'); setClienteSel(null); setProyectoSel(null) }}
-                  className="hover:text-white">Clientes</button>
-                {clienteSel && <>
-                  <span>›</span>
-                  <button onClick={() => { setVista('proyectos'); setProyectoSel(null) }}
-                    className="hover:text-white">{clienteSel.nombre}</button>
-                </>}
-                {proyectoSel && <>
-                  <span>›</span>
-                  <span className="text-white">{proyectoSel.concepto}</span>
-                </>}
-              </div>
+          <div>
+            <h1 className="text-base font-bold">CIO — Business Process Transformation</h1>
+            <div className="flex items-center gap-2 text-xs text-blue-200">
+              <button onClick={() => { setVista('clientes'); setClienteSel(null); setProyectoSel(null) }}
+                className="hover:text-white">Clientes</button>
+              {clienteSel && <>
+                <span>›</span>
+                <button onClick={() => { setVista('proyectos'); setProyectoSel(null) }}
+                  className="hover:text-white">{clienteSel.nombre}</button>
+              </>}
+              {proyectoSel && <>
+                <span>›</span>
+                <span className="text-white">{proyectoSel.concepto}</span>
+              </>}
             </div>
           </div>
           <button onClick={() => { localStorage.removeItem('cio_sesion'); navigate('/cio/login') }}
@@ -198,7 +209,7 @@ export default function PanelCIO() {
           <>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-bold text-blue-800 text-lg">Proyectos — {clienteSel.nombre}</h2>
-              <button onClick={() => setModalProyecto({ concepto: '', valor_contratado: '' })}
+              <button onClick={() => setModalProyecto({ concepto: '' })}
                 className="bg-blue-700 text-white px-4 py-1.5 rounded text-sm font-medium hover:bg-blue-800">
                 + Nuevo proyecto
               </button>
@@ -208,6 +219,7 @@ export default function PanelCIO() {
                 <p className="text-sm text-gray-400 text-center py-10 bg-white rounded-lg border border-gray-200">No hay proyectos</p>
               ) : proyectos.map(p => {
                 const facturado = facturadoTotal(p.cio_items_facturacion)
+                const contratado = valorProductos(p.cio_productos)
                 const horas = horasTotal(p.cio_registros_tiempo)
                 return (
                   <div key={p.id} className="bg-white rounded-lg border border-gray-200 px-4 py-3">
@@ -215,7 +227,7 @@ export default function PanelCIO() {
                       <button onClick={() => seleccionarProyecto(p)} className="text-left flex-1">
                         <p className="font-semibold text-gray-800 mb-1">{p.concepto}</p>
                         <div className="flex gap-4 text-xs text-gray-500">
-                          <span>Contratado: <span className="font-medium text-gray-700">{fmt(p.valor_contratado)}</span></span>
+                          <span>Contratado: <span className="font-medium text-gray-700">{fmt(contratado)}</span></span>
                           <span>Facturado: <span className="font-medium text-green-700">{fmt(facturado)}</span></span>
                           <span>Horas: <span className="font-medium text-blue-700">{horas}h</span></span>
                         </div>
@@ -235,9 +247,10 @@ export default function PanelCIO() {
         {/* ── DETALLE PROYECTO ── */}
         {vista === 'proyecto' && proyectoSel && (
           <>
+            {/* Totales */}
             <div className="grid grid-cols-3 gap-3 mb-6">
               {[
-                { label: 'Valor contratado', valor: fmt(proyectoSel.valor_contratado), color: 'text-blue-700' },
+                { label: 'Valor contratado', valor: fmt(valorProductos(proyectoSel.cio_productos)), color: 'text-blue-700' },
                 { label: 'Total facturado', valor: fmt(facturadoTotal(proyectoSel.cio_items_facturacion)), color: 'text-green-700' },
                 { label: 'Horas dedicadas', valor: horasTotal(proyectoSel.cio_registros_tiempo) + 'h', color: 'text-purple-700' },
               ].map(({ label, valor, color }) => (
@@ -248,12 +261,56 @@ export default function PanelCIO() {
               ))}
             </div>
 
+            {/* Productos / Servicios */}
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-4">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Productos / Servicios
+                  <span className="ml-2 text-blue-700 font-bold">{fmt(valorProductos(productos))}</span>
+                </p>
+                <button onClick={() => setModalProducto({ concepto: '', valor: '' })}
+                  className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">
+                  + Agregar
+                </button>
+              </div>
+              {productos.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-6">Sin productos registrados</p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Concepto</th>
+                      <th className="text-right px-4 py-2 text-xs font-medium text-gray-500">Valor</th>
+                      <th className="text-right px-4 py-2 text-xs font-medium text-gray-500">Horas</th>
+                      <th className="px-4 py-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {productos.map(prod => {
+                      const horasProd = horasTotal((proyectoSel.cio_registros_tiempo || []).filter(r => r.producto_id === prod.id))
+                      return (
+                        <tr key={prod.id}>
+                          <td className="px-4 py-2 text-gray-800 font-medium">{prod.concepto}</td>
+                          <td className="px-4 py-2 text-right text-blue-700 font-medium">{fmt(prod.valor)}</td>
+                          <td className="px-4 py-2 text-right text-purple-600">{horasProd}h</td>
+                          <td className="px-4 py-2 text-right">
+                            <button onClick={() => setModalProducto(prod)} className="text-xs text-blue-500 hover:underline mr-2">Editar</button>
+                            <button onClick={() => eliminarProducto(prod.id)} className="text-xs text-red-500 hover:underline">✕</button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
             {/* Items facturación */}
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-4">
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Facturación</p>
                 <button onClick={() => setModalItem({ fecha_facturacion: '', valor_facturado: '', descripcion: '' })}
-                  className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">
+                  className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">
                   + Agregar
                 </button>
               </div>
@@ -289,8 +346,10 @@ export default function PanelCIO() {
             {/* Registros de tiempo */}
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Registro de tiempo</p>
-                <button onClick={() => setModalTiempo({ fecha: '', hora_inicio: '', hora_fin: '', con_quien: '', actividad: '' })}
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Registro de tiempo — <span className="text-purple-700">{horasTotal(proyectoSel.cio_registros_tiempo)}h total</span>
+                </p>
+                <button onClick={() => setModalTiempo({ fecha: '', hora_inicio: '', hora_fin: '', con_quien: '', actividad: '', producto_id: '' })}
                   className="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700">
                   + Registrar
                 </button>
@@ -304,24 +363,29 @@ export default function PanelCIO() {
                       <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Fecha</th>
                       <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Horario</th>
                       <th className="text-center px-4 py-2 text-xs font-medium text-gray-500">Horas</th>
+                      <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Producto</th>
                       <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Con quién</th>
                       <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Actividad</th>
                       <th className="px-4 py-2"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {[...(proyectoSel.cio_registros_tiempo || [])].sort((a, b) => b.fecha.localeCompare(a.fecha)).map(r => (
-                      <tr key={r.id}>
-                        <td className="px-4 py-2 text-gray-500 whitespace-nowrap">{fmtFecha(r.fecha)}</td>
-                        <td className="px-4 py-2 text-gray-500 whitespace-nowrap">{r.hora_inicio} – {r.hora_fin}</td>
-                        <td className="px-4 py-2 text-center font-medium text-purple-700">{r.horas}h</td>
-                        <td className="px-4 py-2 text-gray-700">{r.con_quien || '—'}</td>
-                        <td className="px-4 py-2 text-gray-700 max-w-xs truncate">{r.actividad || '—'}</td>
-                        <td className="px-4 py-2 text-right">
-                          <button onClick={() => eliminarTiempo(r.id)} className="text-xs text-red-500 hover:underline">✕</button>
-                        </td>
-                      </tr>
-                    ))}
+                    {[...(proyectoSel.cio_registros_tiempo || [])].sort((a, b) => b.fecha.localeCompare(a.fecha)).map(r => {
+                      const prod = productos.find(p => p.id === r.producto_id)
+                      return (
+                        <tr key={r.id}>
+                          <td className="px-4 py-2 text-gray-500 whitespace-nowrap">{fmtFecha(r.fecha)}</td>
+                          <td className="px-4 py-2 text-gray-500 whitespace-nowrap">{r.hora_inicio} – {r.hora_fin}</td>
+                          <td className="px-4 py-2 text-center font-medium text-purple-700">{r.horas}h</td>
+                          <td className="px-4 py-2 text-xs text-blue-700">{prod ? prod.concepto : '—'}</td>
+                          <td className="px-4 py-2 text-gray-700">{r.con_quien || '—'}</td>
+                          <td className="px-4 py-2 text-gray-700 max-w-xs truncate">{r.actividad || '—'}</td>
+                          <td className="px-4 py-2 text-right">
+                            <button onClick={() => eliminarTiempo(r.id)} className="text-xs text-red-500 hover:underline">✕</button>
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               )}
@@ -330,31 +394,29 @@ export default function PanelCIO() {
         )}
       </div>
 
-      {/* Modal Cliente */}
       {modalCliente && (
         <Modal titulo={modalCliente.id ? 'Editar cliente' : 'Nuevo cliente'} onClose={() => setModalCliente(null)}>
           <FormCliente initial={modalCliente} onGuardar={guardarCliente} />
         </Modal>
       )}
-
-      {/* Modal Proyecto */}
       {modalProyecto && (
         <Modal titulo={modalProyecto.id ? 'Editar proyecto' : 'Nuevo proyecto'} onClose={() => setModalProyecto(null)}>
           <FormProyecto initial={modalProyecto} onGuardar={guardarProyecto} />
         </Modal>
       )}
-
-      {/* Modal Item */}
+      {modalProducto && (
+        <Modal titulo={modalProducto.id ? 'Editar producto/servicio' : 'Nuevo producto/servicio'} onClose={() => setModalProducto(null)}>
+          <FormProducto initial={modalProducto} onGuardar={guardarProducto} />
+        </Modal>
+      )}
       {modalItem && (
         <Modal titulo={modalItem.id ? 'Editar facturación' : 'Nueva facturación'} onClose={() => setModalItem(null)}>
           <FormItem initial={modalItem} onGuardar={guardarItem} />
         </Modal>
       )}
-
-      {/* Modal Tiempo */}
       {modalTiempo && (
         <Modal titulo="Registrar tiempo" onClose={() => setModalTiempo(null)}>
-          <FormTiempo initial={modalTiempo} onGuardar={guardarTiempo} />
+          <FormTiempo initial={modalTiempo} productos={productos} onGuardar={guardarTiempo} />
         </Modal>
       )}
     </div>
@@ -408,9 +470,30 @@ function FormProyecto({ initial, onGuardar }) {
         <input value={form.concepto} onChange={e => set('concepto', e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
+      <p className="text-xs text-gray-400">El valor total del proyecto se calcula automáticamente a partir de los productos/servicios.</p>
+      <button onClick={() => onGuardar(form)} disabled={!form.concepto}
+        className="w-full bg-blue-700 text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-800 disabled:opacity-50">
+        Guardar
+      </button>
+    </div>
+  )
+}
+
+function FormProducto({ initial, onGuardar }) {
+  const [form, setForm] = useState(initial)
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
+  return (
+    <div className="space-y-3">
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Valor contratado</label>
-        <input type="number" value={form.valor_contratado} onChange={e => set('valor_contratado', e.target.value)}
+        <label className="block text-xs font-medium text-gray-600 mb-1">Concepto *</label>
+        <input value={form.concepto} onChange={e => set('concepto', e.target.value)}
+          placeholder="Nombre del producto o servicio..."
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">Valor (0 si es sin costo)</label>
+        <input type="number" value={form.valor} onChange={e => set('valor', e.target.value)}
+          placeholder="0"
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
       <button onClick={() => onGuardar(form)} disabled={!form.concepto}
@@ -449,7 +532,7 @@ function FormItem({ initial, onGuardar }) {
   )
 }
 
-function FormTiempo({ initial, onGuardar }) {
+function FormTiempo({ initial, productos, onGuardar }) {
   const [form, setForm] = useState(initial)
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
   const horas = form.hora_inicio && form.hora_fin ? (() => {
@@ -461,6 +544,14 @@ function FormTiempo({ initial, onGuardar }) {
 
   return (
     <div className="space-y-3">
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">Producto / Servicio</label>
+        <select value={form.producto_id} onChange={e => set('producto_id', e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">— Sin especificar —</option>
+          {productos.map(p => <option key={p.id} value={p.id}>{p.concepto}</option>)}
+        </select>
+      </div>
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">Fecha *</label>
         <input type="date" value={form.fecha} onChange={e => set('fecha', e.target.value)}
