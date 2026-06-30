@@ -9,6 +9,7 @@ import PanelResponsabilidadesConsejo from './PanelResponsabilidadesConsejo'
 import BusquedaAvanzada from '../admin/BusquedaAvanzada'
 import PanelResponsabilidadesPilares from './PanelResponsabilidadesPilares'
 import PanelJunta from '../admin/PanelJunta'
+import PanelFinanciero from '../financiero/PanelFinanciero'
 import PuntosServicio from '../admin/PuntosServicio'
 import GestionConsejo from '../admin/GestionConsejo'
 
@@ -327,7 +328,7 @@ export default function PanelMiembro() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-xs text-blue-200">{sesion.nombre}</span>
-            {(sesion.roles?.includes('responsable_formacion') || sesion.roles?.includes('responsable_obras') || sesion.roles?.includes('coordinador_consejo') || datos?.estado_consagracion === 'pilar' || datos?.responsabilidades_consejo?.includes('Coordinador principal del consejo') || datos?.responsabilidades_pilar?.includes('Organizacional')) && (
+            {(sesion.roles?.includes('responsable_formacion') || sesion.roles?.includes('responsable_obras') || sesion.roles?.includes('coordinador_consejo') || sesion.roles?.includes('responsable_financiero') || datos?.estado_consagracion === 'pilar' || datos?.responsabilidades_consejo?.includes('Coordinador principal del consejo') || datos?.responsabilidades_pilar?.includes('Organizacional')) && (
               <div className="flex bg-blue-900 rounded-lg overflow-hidden">
                 <button onClick={() => setPanelTab('perfil')}
                   className={`text-xs px-3 py-1.5 ${panelTab === 'perfil' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
@@ -375,6 +376,12 @@ export default function PanelMiembro() {
                     Responsabilidades y ciudades de pilares
                   </button>
                 </>)}
+                {sesion.roles?.includes('responsable_financiero') && (
+                  <button onClick={() => setPanelTab('financiero')}
+                    className={`text-xs px-3 py-1.5 ${panelTab === 'financiero' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
+                    Financiero
+                  </button>
+                )}
                 {datos?.estado_consagracion === 'pilar' && (
                   <button onClick={() => setPanelTab('correos')}
                     className={`text-xs px-3 py-1.5 ${panelTab === 'correos' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
@@ -423,6 +430,7 @@ export default function PanelMiembro() {
       {panelTab === 'correos' && (
         <BusquedaAvanzada authHeaders={{ 'x-miembro-id': sesion.id }} esPilar />
       )}
+      {panelTab === 'financiero' && <PanelFinanciero />}
 
       {panelTab === 'perfil' && <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Estado del proceso */}

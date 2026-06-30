@@ -403,6 +403,28 @@ export default function DetalleRegistro({ registro, onVolver }) {
 
           <Campo label="Motivación consagración como paciente" campo="motivacion_paciente" tipo="textarea" />
           <Campo label="Motivación consagración como servita" campo="motivacion_servita" tipo="textarea" />
+
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <label className="block text-xs font-medium text-gray-500 mb-2">Roles del sistema</label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox"
+                checked={(datos.roles || []).includes('responsable_financiero')}
+                onChange={async (e) => {
+                  const res = await fetch(`${API_URL}/api/admin/registros/${datos.id}/rol-financiero`, {
+                    method: 'PUT', headers: { 'x-admin-key': 'SDS2026admin', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ asignar: e.target.checked })
+                  }).then(r => r.json()).catch(() => ({ ok: false }))
+                  if (res.ok) {
+                    const roles = datos.roles || []
+                    actualizar('roles', e.target.checked ? [...roles, 'responsable_financiero'] : roles.filter(r => r !== 'responsable_financiero'))
+                    setMensaje('✅ Rol financiero actualizado')
+                    setTimeout(() => setMensaje(''), 3000)
+                  }
+                }}
+                className="w-4 h-4 text-blue-600" />
+              <span className="text-sm text-gray-700">Responsable financiero de la ciudad</span>
+            </label>
+          </div>
         </div>
 
         {/* Historial del proceso */}
