@@ -360,7 +360,7 @@ export default function PanelMiembro() {
                 {datos?.responsabilidades_pilar?.includes('Organizacional') && (<>
                   <button onClick={() => setPanelTab('aprobaciones')}
                     className={`text-xs px-3 py-1.5 ${panelTab === 'aprobaciones' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
-                    Aprobaciones
+                    Aprobación consagraciones
                   </button>
                   <button onClick={() => setPanelTab('puntos')}
                     className={`text-xs px-3 py-1.5 ${panelTab === 'puntos' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
