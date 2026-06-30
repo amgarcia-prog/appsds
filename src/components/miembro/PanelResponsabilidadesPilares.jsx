@@ -24,6 +24,7 @@ export default function PanelResponsabilidadesPilares() {
   const headers = { 'x-miembro-id': sesion.id, 'Content-Type': 'application/json' }
 
   const [pilares, setPilares] = useState([])
+  const [ciudadesPorPilar, setCiudadesPorPilar] = useState({})
   const [cargando, setCargando] = useState(true)
   const [editandoId, setEditandoId] = useState(null)
   const [responsabilidadesEdit, setResponsabilidadesEdit] = useState([])
@@ -39,15 +40,21 @@ export default function PanelResponsabilidadesPilares() {
   const cargar = async () => {
     setCargando(true)
     const data = await fetch(`${API_URL}/api/organizacional/pilares`, { headers }).then(r => r.json()).catch(() => [])
-    setPilares(Array.isArray(data) ? data : [])
+    const lista = Array.isArray(data) ? data : []
+    setPilares(lista)
+    const ciudadesMap = {}
+    await Promise.all(lista.map(async p => {
+      const c = await fetch(`${API_URL}/api/organizacional/pilar/${p.id}/ciudades`, { headers }).then(r => r.json()).catch(() => [])
+      ciudadesMap[p.id] = Array.isArray(c) ? c : []
+    }))
+    setCiudadesPorPilar(ciudadesMap)
     setCargando(false)
   }
 
-  const abrirEdicion = async (p) => {
+  const abrirEdicion = (p) => {
     setEditandoId(p.id)
     setResponsabilidadesEdit(p.responsabilidades_pilar || [])
-    const ciudades = await fetch(`${API_URL}/api/organizacional/pilar/${p.id}/ciudades`, { headers }).then(r => r.json()).catch(() => [])
-    setCiudadesEdit(Array.isArray(ciudades) ? ciudades : [])
+    setCiudadesEdit(ciudadesPorPilar[p.id] || [])
     setNuevaCiudad({ pais: '', departamento: '', ciudad: '' })
   }
 
@@ -74,21 +81,27 @@ export default function PanelResponsabilidadesPilares() {
     }).then(r => r.json()).catch(() => ({ ok: false }))
     if (res.ok) {
       const ciudades = await fetch(`${API_URL}/api/organizacional/pilar/${pilarId}/ciudades`, { headers }).then(r => r.json()).catch(() => [])
-      setCiudadesEdit(Array.isArray(ciudades) ? ciudades : [])
+      const lista = Array.isArray(ciudades) ? ciudades : []
+      setCiudadesEdit(lista)
+      setCiudadesPorPilar(prev => ({ ...prev, [pilarId]: lista }))
       setNuevaCiudad({ pais: '', departamento: '', ciudad: '' })
     } else msg('❌ Error al agregar ciudad')
   }
 
   const eliminarCiudad = async (pilarId, ciudadId) => {
     await fetch(`${API_URL}/api/organizacional/pilar/${pilarId}/ciudades/${ciudadId}`, { method: 'DELETE', headers })
-    setCiudadesEdit(prev => prev.filter(c => c.id !== ciudadId))
+    setCiudadesEdit(prev => {
+      const nueva = prev.filter(c => c.id !== ciudadId)
+      setCiudadesPorPilar(m => ({ ...m, [pilarId]: nueva }))
+      return nueva
+    })
   }
 
   const nombre = (p) => [p.primer_nombre, p.segundo_nombre, p.primer_apellido, p.segundo_apellido].filter(Boolean).join(' ')
 
   return (
     <div>
-      <h2 className="font-bold text-blue-800 text-lg mb-4">Responsabilidades de pilares</h2>
+      <h2 className="font-bold text-blue-800 text-lg mb-4">Responsabilidades y ciudades de pilares</h2>
       {mensaje && <p className="text-sm text-center py-2 bg-white border rounded-lg mb-3">{mensaje}</p>}
 
       {cargando ? (
@@ -175,13 +188,27 @@ export default function PanelResponsabilidadesPilares() {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-1">
-                  {(p.responsabilidades_pilar || []).length === 0 ? (
-                    <span className="text-xs text-gray-400">Sin responsabilidades asignadas</span>
-                  ) : (
-                    (p.responsabilidades_pilar || []).map(r => (
-                      <span key={r} className={`text-xs px-2 py-0.5 rounded-full ${nivelLabel(r)}`}>{r}</span>
-                    ))
+                <div>
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {(p.responsabilidades_pilar || []).length === 0 ? (
+                      <span className="text-xs text-gray-400">Sin responsabilidades asignadas</span>
+                    ) : (
+                      (p.responsabilidades_pilar || []).map(r => (
+                        <span key={r} className={`text-xs px-2 py-0.5 rounded-full ${nivelLabel(r)}`}>{r}</span>
+                      ))
+                    )}
+                  </div>
+                  {(ciudadesPorPilar[p.id] || []).length > 0 && (
+                    <div className="mt-1">
+                      <p className="text-xs text-gray-400 mb-1">Ciudades:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {(ciudadesPorPilar[p.id] || []).map(c => (
+                          <span key={c.id} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                            {c.ciudad}{c.departamento ? `, ${c.departamento}` : ''} · {c.pais}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
