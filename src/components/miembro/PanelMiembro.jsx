@@ -239,7 +239,7 @@ export default function PanelMiembro() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-xs text-blue-200">{sesion.nombre}</span>
-            {(sesion.roles?.includes('responsable_formacion') || sesion.roles?.includes('responsable_obras') || sesion.roles?.includes('coordinador_consejo') || datos?.estado_consagracion === 'pilar') && (
+            {(sesion.roles?.includes('responsable_formacion') || sesion.roles?.includes('responsable_obras') || sesion.roles?.includes('coordinador_consejo') || datos?.estado_consagracion === 'pilar' || datos?.responsabilidades_consejo?.includes('Coordinador principal del consejo')) && (
               <div className="flex bg-blue-900 rounded-lg overflow-hidden">
                 <button onClick={() => setPanelTab('perfil')}
                   className={`text-xs px-3 py-1.5 ${panelTab === 'perfil' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
@@ -261,6 +261,12 @@ export default function PanelMiembro() {
                   <button onClick={() => setPanelTab('consejo')}
                     className={`text-xs px-3 py-1.5 ${panelTab === 'consejo' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
                     Responsabilidades consejo
+                  </button>
+                )}
+                {datos?.responsabilidades_consejo?.includes('Coordinador principal del consejo') && (
+                  <button onClick={() => setPanelTab('gestion_consejo')}
+                    className={`text-xs px-3 py-1.5 ${panelTab === 'gestion_consejo' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
+                    Gestión del consejo
                   </button>
                 )}
                 {datos?.estado_consagracion === 'pilar' && (
@@ -291,6 +297,11 @@ export default function PanelMiembro() {
         </div>
       )}
       {panelTab === 'consejo' && (
+        <div className="max-w-2xl mx-auto px-4 py-6">
+          <PanelResponsabilidadesConsejo />
+        </div>
+      )}
+      {panelTab === 'gestion_consejo' && (
         <div className="max-w-2xl mx-auto px-4 py-6">
           <PanelResponsabilidadesConsejo />
         </div>
