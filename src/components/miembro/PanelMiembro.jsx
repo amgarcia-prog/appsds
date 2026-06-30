@@ -372,7 +372,7 @@ export default function PanelMiembro() {
                   </button>
                   <button onClick={() => setPanelTab('pilares')}
                     className={`text-xs px-3 py-1.5 ${panelTab === 'pilares' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
-                    Pilares
+                    Responsabilidades y ciudades de pilares
                   </button>
                 </>)}
                 {datos?.estado_consagracion === 'pilar' && (
