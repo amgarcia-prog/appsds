@@ -7,6 +7,10 @@ import PanelFormacion from './PanelFormacion'
 import PanelObrasServicios from './PanelObrasServicios'
 import PanelResponsabilidadesConsejo from './PanelResponsabilidadesConsejo'
 import BusquedaAvanzada from '../admin/BusquedaAvanzada'
+import PanelResponsabilidadesPilares from './PanelResponsabilidadesPilares'
+import PanelJunta from '../admin/PanelJunta'
+import PuntosServicio from '../admin/PuntosServicio'
+import GestionConsejo from '../admin/GestionConsejo'
 
 const PAISES = [
   'Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica',
@@ -69,6 +73,90 @@ function Selector({ label, value, onChange, opciones }) {
         <option value="">Selecciona...</option>
         {opciones.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
+    </div>
+  )
+}
+
+function PanelCiudadesPilar({ sesionId }) {
+  const headers = { 'x-miembro-id': sesionId, 'Content-Type': 'application/json' }
+  const [ciudades, setCiudades] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [nuevaCiudad, setNuevaCiudad] = useState({ pais: '', departamento: '', ciudad: '' })
+  const [mensaje, setMensaje] = useState('')
+
+  const msg = (m) => { setMensaje(m); setTimeout(() => setMensaje(''), 3000) }
+
+  const cargar = async () => {
+    setCargando(true)
+    const data = await fetch(`${API_URL}/api/pilar/ciudades`, { headers }).then(r => r.json()).catch(() => [])
+    setCiudades(Array.isArray(data) ? data : [])
+    setCargando(false)
+  }
+
+  useEffect(() => { cargar() }, [sesionId])
+
+  const agregar = async () => {
+    if (!nuevaCiudad.pais || !nuevaCiudad.ciudad) return msg('Selecciona país y ciudad')
+    const res = await fetch(`${API_URL}/api/pilar/ciudades`, {
+      method: 'POST', headers,
+      body: JSON.stringify(nuevaCiudad)
+    }).then(r => r.json()).catch(() => ({ ok: false }))
+    if (res.ok) { await cargar(); setNuevaCiudad({ pais: '', departamento: '', ciudad: '' }) }
+    else msg('Error al agregar ciudad')
+  }
+
+  const eliminar = async (id) => {
+    await fetch(`${API_URL}/api/pilar/ciudades/${id}`, { method: 'DELETE', headers })
+    setCiudades(prev => prev.filter(c => c.id !== id))
+  }
+
+  return (
+    <div>
+      <h3 className="font-bold text-blue-800 text-base mb-4">Ciudades que tengo a cargo</h3>
+      {mensaje && <p className="text-sm text-center py-2 bg-white border rounded-lg mb-3">{mensaje}</p>}
+      {cargando ? (
+        <p className="text-sm text-gray-400 text-center py-6">Cargando...</p>
+      ) : (
+        <>
+          {ciudades.length > 0 ? (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {ciudades.map(c => (
+                <span key={c.id} className="flex items-center gap-1 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                  {c.ciudad}{c.departamento ? `, ${c.departamento}` : ''} · {c.pais}
+                  <button onClick={() => eliminar(c.id)} className="ml-1 text-blue-400 hover:text-red-600">✕</button>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400 mb-4">No tienes ciudades asignadas.</p>
+          )}
+          <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+            <p className="text-xs text-gray-500 mb-2 font-medium">Agregar ciudad</p>
+            <div className="mb-2">
+              <select value={nuevaCiudad.pais} onChange={e => setNuevaCiudad({ pais: e.target.value, departamento: '', ciudad: '' })}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                <option value="">País...</option>
+                {PAISES.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            {nuevaCiudad.pais && (
+              <SelectorCiudad
+                pais={nuevaCiudad.pais}
+                departamento={nuevaCiudad.departamento}
+                ciudad={nuevaCiudad.ciudad}
+                onChangeDepartamento={v => setNuevaCiudad(prev => ({ ...prev, departamento: v, ciudad: '' }))}
+                onChangeCiudad={v => setNuevaCiudad(prev => ({ ...prev, ciudad: v }))}
+              />
+            )}
+            {nuevaCiudad.ciudad && (
+              <button onClick={agregar}
+                className="mt-2 w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
+                + Agregar ciudad
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -239,7 +327,7 @@ export default function PanelMiembro() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-xs text-blue-200">{sesion.nombre}</span>
-            {(sesion.roles?.includes('responsable_formacion') || sesion.roles?.includes('responsable_obras') || sesion.roles?.includes('coordinador_consejo') || datos?.estado_consagracion === 'pilar' || datos?.responsabilidades_consejo?.includes('Coordinador principal del consejo')) && (
+            {(sesion.roles?.includes('responsable_formacion') || sesion.roles?.includes('responsable_obras') || sesion.roles?.includes('coordinador_consejo') || datos?.estado_consagracion === 'pilar' || datos?.responsabilidades_consejo?.includes('Coordinador principal del consejo') || datos?.responsabilidades_pilar?.includes('Organizacional')) && (
               <div className="flex bg-blue-900 rounded-lg overflow-hidden">
                 <button onClick={() => setPanelTab('perfil')}
                   className={`text-xs px-3 py-1.5 ${panelTab === 'perfil' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
@@ -269,6 +357,24 @@ export default function PanelMiembro() {
                     Gestión del consejo
                   </button>
                 )}
+                {datos?.responsabilidades_pilar?.includes('Organizacional') && (<>
+                  <button onClick={() => setPanelTab('aprobaciones')}
+                    className={`text-xs px-3 py-1.5 ${panelTab === 'aprobaciones' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
+                    Aprobaciones
+                  </button>
+                  <button onClick={() => setPanelTab('puntos')}
+                    className={`text-xs px-3 py-1.5 ${panelTab === 'puntos' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
+                    Puntos de servicio
+                  </button>
+                  <button onClick={() => setPanelTab('consejos_org')}
+                    className={`text-xs px-3 py-1.5 ${panelTab === 'consejos_org' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
+                    Consejos
+                  </button>
+                  <button onClick={() => setPanelTab('pilares')}
+                    className={`text-xs px-3 py-1.5 ${panelTab === 'pilares' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
+                    Pilares
+                  </button>
+                </>)}
                 {datos?.estado_consagracion === 'pilar' && (
                   <button onClick={() => setPanelTab('correos')}
                     className={`text-xs px-3 py-1.5 ${panelTab === 'correos' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
@@ -306,6 +412,14 @@ export default function PanelMiembro() {
           <PanelResponsabilidadesConsejo />
         </div>
       )}
+      {panelTab === 'aprobaciones' && <PanelJunta />}
+      {panelTab === 'puntos' && <PuntosServicio />}
+      {panelTab === 'consejos_org' && <GestionConsejo />}
+      {panelTab === 'pilares' && (
+        <div className="max-w-2xl mx-auto px-4 py-6">
+          <PanelResponsabilidadesPilares />
+        </div>
+      )}
       {panelTab === 'correos' && (
         <BusquedaAvanzada authHeaders={{ 'x-miembro-id': sesion.id }} esPilar />
       )}
@@ -328,6 +442,7 @@ export default function PanelMiembro() {
             { key: 'academico', label: 'Académico / Laboral' },
             { key: 'medico', label: 'Información médica' },
             ...(mostrarTabConsagracion ? [{ key: 'consagracion', label: `Consagración como ${nivelLabel}` }] : []),
+            ...(datos?.estado_consagracion === 'pilar' ? [{ key: 'ciudades', label: 'Ciudades' }] : []),
           ].map(t => (
             <button key={t.key} onClick={() => setPestaña(t.key)}
               className={`px-3 py-2 rounded-md text-xs font-medium transition-colors ${pestaña === t.key ? 'bg-white text-blue-800 shadow' : 'text-gray-600 hover:text-gray-800'}`}>
@@ -563,7 +678,11 @@ export default function PanelMiembro() {
             </div>
           )}
 
-          {hayEdiciones && pestaña !== 'consagracion' && (
+          {pestaña === 'ciudades' && datos?.estado_consagracion === 'pilar' && (
+            <PanelCiudadesPilar sesionId={sesion.id} />
+          )}
+
+          {hayEdiciones && pestaña !== 'consagracion' && pestaña !== 'ciudades' && (
             <button onClick={guardar} disabled={guardando}
               className="w-full mt-4 bg-blue-700 text-white py-3 rounded-lg text-sm font-semibold hover:bg-blue-800 disabled:opacity-50">
               {guardando ? 'Guardando...' : '💾 Guardar cambios'}
