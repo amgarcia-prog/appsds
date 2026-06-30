@@ -73,17 +73,11 @@ function SelectorArchivo({ url, onChange, onError }) {
           <div className="flex gap-2 justify-center flex-wrap">
             <button type="button" onClick={() => inputFileRef.current?.click()}
               className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg">
-              📁 Cargar archivo
-            </button>
-            <button type="button" onClick={() => inputCamaraRef.current?.click()}
-              className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg">
-              📷 Foto (celular)
+              📁 Cargar archivo o foto
             </button>
           </div>
           <p className="text-xs text-gray-400 text-center mt-2">También puedes hacer <strong>Ctrl+V</strong> para pegar una imagen copiada</p>
           <input ref={inputFileRef} type="file" accept="image/*,application/pdf"
-            className="hidden" onChange={e => subir(e.target.files[0])} />
-          <input ref={inputCamaraRef} type="file" accept="image/*" capture="environment"
             className="hidden" onChange={e => subir(e.target.files[0])} />
         </>
       )}
