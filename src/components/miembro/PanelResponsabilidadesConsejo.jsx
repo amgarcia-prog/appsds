@@ -3,7 +3,7 @@ import API_URL from '../../config.js'
 
 const RESPONSABILIDADES = [
   'Financiero', 'Espiritualidad y eventos', 'Obras y servicios',
-  'Comunicaciones', 'Misiones', 'Torreta', 'Formación y consagraciones', 'Tecnología'
+  'Comunicaciones', 'Misiones', 'Torreta', 'Formación y consagraciones'
 ]
 
 const RESPONSABILIDADES_SOLO_JUNTA = [

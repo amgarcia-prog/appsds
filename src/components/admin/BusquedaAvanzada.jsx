@@ -25,7 +25,7 @@ const NIVELES = [
 const RESPONSABILIDADES = [
   'Financiero','Espiritualidad y eventos','Obras y servicios',
   'Comunicaciones','Misiones','Torreta','Formación y consagraciones',
-  'Tecnología','Coordinador principal del consejo','Coordinador suplente del consejo'
+  'Coordinador principal del consejo','Coordinador suplente del consejo'
 ]
 
 const TODAS_COLUMNAS = [
