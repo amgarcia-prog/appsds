@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import API_URL from '../../config.js'
 
 const H = () => ({ 'x-miembro-id': JSON.parse(localStorage.getItem('miembro_sesion') || '{}').id, 'Content-Type': 'application/json' })
@@ -9,6 +9,94 @@ const mesActual = new Date().getMonth() + 1
 
 function fmt(v) { return Number(v).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }) }
 function hoy() { return new Date().toISOString().split('T')[0] }
+
+// ── Selector de archivo (cargar, cámara, pegar) ───────────────────────────────
+function SelectorArchivo({ url, onChange, onError }) {
+  const [subiendo, setSubiendo] = useState(false)
+  const inputFileRef = useRef(null)
+  const inputCamaraRef = useRef(null)
+  const zonaRef = useRef(null)
+
+  const subir = async (archivo) => {
+    if (!archivo) return
+    setSubiendo(true)
+    const fd = new FormData()
+    fd.append('archivo', archivo)
+    fd.append('bucket', 'comprobantes')
+    fd.append('carpeta', 'soportes')
+    const res = await fetch(`${API_URL}/api/upload`, {
+      method: 'POST',
+      headers: { 'x-miembro-id': JSON.parse(localStorage.getItem('miembro_sesion') || '{}').id },
+      body: fd
+    }).then(r => r.json()).catch(() => ({ ok: false }))
+    if (res.ok) onChange(res.url)
+    else onError('Error al subir el archivo')
+    setSubiendo(false)
+  }
+
+  const onPaste = useCallback((e) => {
+    const items = e.clipboardData?.items
+    if (!items) return
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault()
+        subir(item.getAsFile())
+        return
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    const zona = zonaRef.current
+    if (!zona) return
+    zona.addEventListener('paste', onPaste)
+    return () => zona.removeEventListener('paste', onPaste)
+  }, [onPaste])
+
+  if (url) {
+    return (
+      <div className="flex items-center gap-3 p-2 bg-green-50 border border-green-200 rounded-lg">
+        <span className="text-green-600 text-sm">✓ Soporte adjunto</span>
+        <a href={url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline">Ver</a>
+        <button onClick={() => onChange('')} className="text-xs text-red-400 hover:text-red-600 ml-auto">Quitar</button>
+      </div>
+    )
+  }
+
+  return (
+    <div ref={zonaRef} tabIndex={0}
+      className="border-2 border-dashed border-gray-300 rounded-lg p-3 focus:outline-none focus:border-blue-400"
+      onPaste={onPaste}>
+      {subiendo ? (
+        <p className="text-xs text-gray-400 text-center py-1">Subiendo...</p>
+      ) : (
+        <>
+          <p className="text-xs text-gray-400 text-center mb-2">Adjuntar soporte</p>
+          <div className="flex gap-2 justify-center flex-wrap">
+            <button type="button" onClick={() => inputFileRef.current?.click()}
+              className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg">
+              📁 Cargar archivo
+            </button>
+            <button type="button" onClick={() => inputCamaraRef.current?.click()}
+              className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg">
+              📷 Tomar foto
+            </button>
+            <button type="button" onClick={() => { zonaRef.current?.focus() }}
+              className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg"
+              title="Haz clic aquí y luego Ctrl+V para pegar desde WhatsApp">
+              📋 Pegar imagen
+            </button>
+          </div>
+          <p className="text-xs text-gray-300 text-center mt-2">También puedes hacer Ctrl+V aquí para pegar</p>
+          <input ref={inputFileRef} type="file" accept="image/*,application/pdf"
+            className="hidden" onChange={e => subir(e.target.files[0])} />
+          <input ref={inputCamaraRef} type="file" accept="image/*" capture="environment"
+            className="hidden" onChange={e => subir(e.target.files[0])} />
+        </>
+      )}
+    </div>
+  )
+}
 
 // ── Providentes ──────────────────────────────────────────────────────────────
 function TabProvidentes() {
@@ -110,7 +198,6 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
   const [form, setForm] = useState(editando || { fecha: hoy(), tipo: 'donacion_servicio', concepto: '', valor: '', providente_id: '', punto_servicio_id: '', mes_aporte: '', comprobante_url: '' })
   const [providentes, setProvidentes] = useState([])
   const [puntos, setPuntos] = useState([])
-  const [subiendo, setSubiendo] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState('')
 
@@ -118,20 +205,6 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
     fetch(`${API_URL}/api/financiero/providentes`, { headers: H() }).then(r => r.json()).then(d => setProvidentes(Array.isArray(d) ? d : []))
     fetch(`${API_URL}/api/financiero/puntos-servicio`, { headers: H() }).then(r => r.json()).then(d => setPuntos(Array.isArray(d) ? d : []))
   }, [])
-
-  const subirArchivo = async (e) => {
-    const archivo = e.target.files[0]
-    if (!archivo) return
-    setSubiendo(true)
-    const fd = new FormData()
-    fd.append('archivo', archivo)
-    fd.append('bucket', 'comprobantes')
-    fd.append('carpeta', 'ingresos')
-    const res = await fetch(`${API_URL}/api/upload`, { method: 'POST', headers: { 'x-miembro-id': H()['x-miembro-id'] }, body: fd }).then(r => r.json()).catch(() => ({ ok: false }))
-    if (res.ok) setForm(p => ({ ...p, comprobante_url: res.url }))
-    else setMensaje('❌ Error al subir archivo')
-    setSubiendo(false)
-  }
 
   const guardar = async () => {
     if (!form.fecha || !form.concepto || !form.valor) return setMensaje('Completa los campos requeridos')
@@ -214,17 +287,12 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
         )}
 
         <div className="mb-4">
-          <label className="block text-xs text-gray-500 mb-0.5">Comprobante</label>
-          {form.comprobante_url ? (
-            <div className="flex items-center gap-2">
-              <a href={form.comprobante_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline">Ver adjunto</a>
-              <button onClick={() => setForm(p => ({ ...p, comprobante_url: '' }))} className="text-xs text-red-400 hover:text-red-600">Quitar</button>
-            </div>
-          ) : (
-            <input type="file" accept="image/*,application/pdf" onChange={subirArchivo} disabled={subiendo}
-              className="w-full text-sm text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:text-xs" />
-          )}
-          {subiendo && <p className="text-xs text-gray-400 mt-1">Subiendo archivo...</p>}
+          <label className="block text-xs text-gray-500 mb-1">Comprobante</label>
+          <SelectorArchivo
+            url={form.comprobante_url}
+            onChange={url => setForm(p => ({ ...p, comprobante_url: url }))}
+            onError={e => setMensaje('❌ ' + e)}
+          />
         </div>
 
         <div className="flex gap-2">
@@ -242,27 +310,12 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
 function ModalEgreso({ onClose, onGuardado, editando }) {
   const [form, setForm] = useState(editando || { fecha: hoy(), punto_servicio_id: '', concepto: '', valor: '', documento_url: '', es_costo_financiero: false })
   const [puntos, setPuntos] = useState([])
-  const [subiendo, setSubiendo] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState('')
 
   useEffect(() => {
     fetch(`${API_URL}/api/financiero/puntos-servicio`, { headers: H() }).then(r => r.json()).then(d => setPuntos(Array.isArray(d) ? d : []))
   }, [])
-
-  const subirArchivo = async (e) => {
-    const archivo = e.target.files[0]
-    if (!archivo) return
-    setSubiendo(true)
-    const fd = new FormData()
-    fd.append('archivo', archivo)
-    fd.append('bucket', 'comprobantes')
-    fd.append('carpeta', 'egresos')
-    const res = await fetch(`${API_URL}/api/upload`, { method: 'POST', headers: { 'x-miembro-id': H()['x-miembro-id'] }, body: fd }).then(r => r.json()).catch(() => ({ ok: false }))
-    if (res.ok) setForm(p => ({ ...p, documento_url: res.url }))
-    else setMensaje('❌ Error al subir archivo')
-    setSubiendo(false)
-  }
 
   const guardar = async () => {
     if (!form.fecha || !form.concepto || !form.valor) return setMensaje('Completa los campos requeridos')
@@ -321,17 +374,12 @@ function ModalEgreso({ onClose, onGuardado, editando }) {
         </div>
 
         <div className="mb-4">
-          <label className="block text-xs text-gray-500 mb-0.5">Documento soporte</label>
-          {form.documento_url ? (
-            <div className="flex items-center gap-2">
-              <a href={form.documento_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline">Ver adjunto</a>
-              <button onClick={() => setForm(p => ({ ...p, documento_url: '' }))} className="text-xs text-red-400 hover:text-red-600">Quitar</button>
-            </div>
-          ) : (
-            <input type="file" accept="image/*,application/pdf" onChange={subirArchivo} disabled={subiendo}
-              className="w-full text-sm text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:text-xs" />
-          )}
-          {subiendo && <p className="text-xs text-gray-400 mt-1">Subiendo archivo...</p>}
+          <label className="block text-xs text-gray-500 mb-1">Documento soporte</label>
+          <SelectorArchivo
+            url={form.documento_url}
+            onChange={url => setForm(p => ({ ...p, documento_url: url }))}
+            onError={e => setMensaje('❌ ' + e)}
+          />
         </div>
 
         <div className="flex gap-2">
