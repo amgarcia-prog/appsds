@@ -47,10 +47,8 @@ function SelectorArchivo({ url, onChange, onError }) {
   }, [])
 
   useEffect(() => {
-    const zona = zonaRef.current
-    if (!zona) return
-    zona.addEventListener('paste', onPaste)
-    return () => zona.removeEventListener('paste', onPaste)
+    document.addEventListener('paste', onPaste)
+    return () => document.removeEventListener('paste', onPaste)
   }, [onPaste])
 
   if (url) {
@@ -79,15 +77,10 @@ function SelectorArchivo({ url, onChange, onError }) {
             </button>
             <button type="button" onClick={() => inputCamaraRef.current?.click()}
               className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg">
-              📷 Tomar foto
-            </button>
-            <button type="button" onClick={() => { zonaRef.current?.focus() }}
-              className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg"
-              title="Haz clic aquí y luego Ctrl+V para pegar desde WhatsApp">
-              📋 Pegar imagen
+              📷 Foto (celular)
             </button>
           </div>
-          <p className="text-xs text-gray-300 text-center mt-2">También puedes hacer Ctrl+V aquí para pegar</p>
+          <p className="text-xs text-gray-400 text-center mt-2">También puedes hacer <strong>Ctrl+V</strong> para pegar una imagen copiada</p>
           <input ref={inputFileRef} type="file" accept="image/*,application/pdf"
             className="hidden" onChange={e => subir(e.target.files[0])} />
           <input ref={inputCamaraRef} type="file" accept="image/*" capture="environment"
