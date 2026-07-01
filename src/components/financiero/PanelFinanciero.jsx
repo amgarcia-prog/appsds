@@ -13,9 +13,11 @@ function hoy() { return new Date().toISOString().split('T')[0] }
 // ── Selector de archivo (cargar, cámara, pegar) ───────────────────────────────
 function SelectorArchivo({ url, onChange, onError }) {
   const [subiendo, setSubiendo] = useState(false)
+  const [modoCamara, setModoCamara] = useState(false)
   const inputFileRef = useRef(null)
-  const inputCamaraRef = useRef(null)
   const zonaRef = useRef(null)
+  const videoRef = useRef(null)
+  const streamRef = useRef(null)
 
   const subir = async (archivo) => {
     if (!archivo) return
@@ -51,6 +53,34 @@ function SelectorArchivo({ url, onChange, onError }) {
     return () => document.removeEventListener('paste', onPaste)
   }, [onPaste])
 
+  const abrirCamara = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      streamRef.current = stream
+      setModoCamara(true)
+      setTimeout(() => { if (videoRef.current) videoRef.current.srcObject = stream }, 100)
+    } catch {
+      onError('No se pudo acceder a la cámara. Verifica los permisos del navegador.')
+    }
+  }
+
+  const cerrarCamara = () => {
+    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop())
+    setModoCamara(false)
+  }
+
+  const tomarFoto = useCallback(() => {
+    if (!videoRef.current) return
+    const canvas = document.createElement('canvas')
+    canvas.width = videoRef.current.videoWidth
+    canvas.height = videoRef.current.videoHeight
+    canvas.getContext('2d').drawImage(videoRef.current, 0, 0)
+    canvas.toBlob(async (blob) => {
+      cerrarCamara()
+      await subir(new File([blob], 'foto.jpg', { type: 'image/jpeg' }))
+    }, 'image/jpeg', 0.9)
+  }, [])
+
   if (url) {
     return (
       <div className="flex items-center gap-3 p-2 bg-green-50 border border-green-200 rounded-lg">
@@ -61,10 +91,26 @@ function SelectorArchivo({ url, onChange, onError }) {
     )
   }
 
+  if (modoCamara) {
+    return (
+      <div className="border border-gray-300 rounded-lg overflow-hidden">
+        <video ref={videoRef} autoPlay playsInline className="w-full rounded-t-lg" />
+        <div className="flex gap-2 p-2 bg-gray-50">
+          <button type="button" onClick={tomarFoto}
+            className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
+            📷 Tomar foto
+          </button>
+          <button type="button" onClick={cerrarCamara}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div ref={zonaRef} tabIndex={0}
-      className="border-2 border-dashed border-gray-300 rounded-lg p-3 focus:outline-none focus:border-blue-400"
-      onPaste={onPaste}>
+    <div ref={zonaRef} className="border-2 border-dashed border-gray-300 rounded-lg p-3">
       {subiendo ? (
         <p className="text-xs text-gray-400 text-center py-1">Subiendo...</p>
       ) : (
@@ -73,7 +119,11 @@ function SelectorArchivo({ url, onChange, onError }) {
           <div className="flex gap-2 justify-center flex-wrap">
             <button type="button" onClick={() => inputFileRef.current?.click()}
               className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg">
-              📁 Cargar archivo o foto
+              📁 Archivo / Galería
+            </button>
+            <button type="button" onClick={abrirCamara}
+              className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg">
+              📷 Cámara
             </button>
           </div>
           <p className="text-xs text-gray-400 text-center mt-2">También puedes hacer <strong>Ctrl+V</strong> para pegar una imagen copiada</p>
