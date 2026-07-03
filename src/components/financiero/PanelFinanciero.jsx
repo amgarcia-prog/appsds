@@ -24,7 +24,7 @@ function SelectorArchivo({ url, onChange, onError }) {
     setSubiendo(true)
     const fd = new FormData()
     fd.append('archivo', archivo)
-    fd.append('bucket', 'comprobantes')
+    fd.append('bucket', 'Comprobantes')
     fd.append('carpeta', 'soportes')
     const res = await fetch(`${API_URL}/api/upload`, {
       method: 'POST',
