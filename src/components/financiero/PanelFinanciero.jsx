@@ -32,7 +32,7 @@ function SelectorArchivo({ url, onChange, onError }) {
       body: fd
     }).then(r => r.json()).catch(() => ({ ok: false }))
     if (res.ok) onChange(res.url)
-    else onError('Error al subir el archivo')
+    else onError(res.mensaje || 'Error al subir el archivo — verifica que el bucket "comprobantes" existe en Supabase Storage')
     setSubiendo(false)
   }
 
@@ -69,17 +69,18 @@ function SelectorArchivo({ url, onChange, onError }) {
     setModoCamara(false)
   }
 
-  const tomarFoto = useCallback(() => {
+  const tomarFoto = () => {
     if (!videoRef.current) return
     const canvas = document.createElement('canvas')
     canvas.width = videoRef.current.videoWidth
     canvas.height = videoRef.current.videoHeight
     canvas.getContext('2d').drawImage(videoRef.current, 0, 0)
+    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop())
+    setModoCamara(false)
     canvas.toBlob(async (blob) => {
-      cerrarCamara()
       await subir(new File([blob], 'foto.jpg', { type: 'image/jpeg' }))
     }, 'image/jpeg', 0.9)
-  }, [])
+  }
 
   if (url) {
     return (
