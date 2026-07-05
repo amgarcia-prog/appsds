@@ -683,6 +683,9 @@ function TabMovimientos() {
                       <p className="text-sm font-bold text-green-700">{fmt(i.valor)}</p>
                       <div className="flex gap-2 justify-end mt-1">
                         {i.comprobante_url && <a href={i.comprobante_url} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline">Ver</a>}
+                        <a href={`${API_URL}/api/financiero/recibo/${i.id}`} target="_blank" rel="noreferrer"
+                          onClick={e => { e.preventDefault(); fetch(`${API_URL}/api/financiero/recibo/${i.id}`, { headers: H() }).then(r => r.blob()).then(b => { const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download=`recibo_${i.numero_recibo||i.id.substring(0,8)}.pdf`; a.click(); URL.revokeObjectURL(u) }) }}
+                          className="text-xs text-purple-600 hover:text-purple-800 cursor-pointer">PDF</a>
                         <button onClick={() => setEditandoIngreso(i)} className="text-xs text-blue-600 hover:text-blue-800">Editar</button>
                         <button onClick={() => eliminarIngreso(i.id)} className="text-xs text-red-400 hover:text-red-600">Eliminar</button>
                       </div>
@@ -961,6 +964,7 @@ function TabReportes() {
     { key: 'movimiento-banco', label: 'Movimiento banco', desc: 'Todos los ingresos y egresos del banco en orden de fecha con saldo acumulado' },
     { key: 'movimiento-caja-menor', label: 'Movimiento caja menor', desc: 'Ingresos y egresos de caja menor con saldo acumulado' },
     { key: 'consumo-caja-menor', label: 'Consumo caja menor', desc: 'Ingresos y egresos de consumo caja menor con saldo acumulado' },
+    { key: 'recibos-mes', label: 'Recibos de donación (ZIP)', desc: 'Descarga todos los recibos PDF del mes en un archivo ZIP' },
   ]
 
   return (
