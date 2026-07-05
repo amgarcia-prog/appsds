@@ -830,7 +830,17 @@ function TabConsultas() {
     setBuscado(true)
     const params = `providente_id=${providenteId}&anio=${anio}`
     const data = await fetch(`${API_URL}/api/financiero/consulta/aportes-benefactor?${params}`, { headers: H() }).then(r => r.json()).catch(() => [])
-    setAportes(Array.isArray(data) ? data : [])
+    const lista = Array.isArray(data) ? data : []
+    const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+    const mesIdx = (m) => {
+      if (!m) return 999
+      const parts = m.trim().split(' ')
+      const idx = MESES.findIndex(x => x.toLowerCase() === parts[0].toLowerCase())
+      const yr = parts[1] ? parseInt(parts[1]) : 0
+      return yr * 100 + idx
+    }
+    lista.sort((a, b) => mesIdx(a.mes_aporte) - mesIdx(b.mes_aporte) || a.fecha.localeCompare(b.fecha))
+    setAportes(lista)
     setCargando(false)
   }
 
