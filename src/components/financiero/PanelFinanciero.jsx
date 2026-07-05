@@ -281,6 +281,7 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
             <option value="aporte_consagrado">Aporte consagrado</option>
             <option value="donacion_servicio">Donación para servicio</option>
             <option value="costo_financiero">Costo financiero</option>
+            <option value="banco_a_caja_menor">De banco a caja menor</option>
             <option value="caja_menor_a_efectivo">De caja menor a efectivo</option>
           </select>
         </div>
@@ -569,7 +570,7 @@ function TabMovimientos() {
   const saldoReal = saldoInicial + totalesHistoricos.totalIngresos - totalesHistoricos.totalEgresos
   const esEspecie = cuentaTab === 'especie'
 
-  const tipoLabel = { aporte_consagrado: 'Aporte consagrado', donacion_servicio: 'Donación', costo_financiero: 'Costo financiero', caja_menor_a_efectivo: 'Caja menor a efectivo' }
+  const tipoLabel = { aporte_consagrado: 'Aporte consagrado', donacion_servicio: 'Donación', costo_financiero: 'Costo financiero', banco_a_caja_menor: 'De banco a caja menor', caja_menor_a_efectivo: 'De caja menor a efectivo' }
 
   return (
     <div>
