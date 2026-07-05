@@ -445,17 +445,11 @@ function ModalEgreso({ onClose, onGuardado, editando }) {
         {!form.es_costo_financiero && (
           <div className="mb-3">
             <label className="block text-xs text-gray-500 mb-0.5">Servicio</label>
-            <select value={form.punto_servicio_id} onChange={e => setForm(p => ({ ...p, punto_servicio_id: e.target.value, punto_servicio_otro: '' }))}
+            <select value={form.punto_servicio_id} onChange={e => setForm(p => ({ ...p, punto_servicio_id: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-              <option value="">Selecciona...</option>
+              <option value="">Sin servicio</option>
               {puntos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-              <option value="__otro__">Otro...</option>
             </select>
-            {form.punto_servicio_id === '__otro__' && (
-              <input value={form.punto_servicio_otro || ''} onChange={e => setForm(p => ({ ...p, punto_servicio_otro: e.target.value }))}
-                placeholder="Describe el servicio"
-                className="mt-2 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            )}
           </div>
         )}
 
