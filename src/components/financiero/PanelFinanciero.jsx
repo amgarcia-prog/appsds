@@ -242,6 +242,11 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
   useEffect(() => {
     fetch(`${API_URL}/api/financiero/providentes`, { headers: H() }).then(r => r.json()).then(d => setProvidentes(Array.isArray(d) ? d : []))
     fetch(`${API_URL}/api/financiero/puntos-servicio`, { headers: H() }).then(r => r.json()).then(d => setPuntos(Array.isArray(d) ? d : []))
+    if (!editando) {
+      fetch(`${API_URL}/api/financiero/proximo-recibo`, { headers: H() }).then(r => r.json()).then(d => {
+        if (d.proximo) setForm(p => ({ ...p, numero_recibo: String(d.proximo) }))
+      })
+    }
   }, [])
 
   const guardar = async () => {
