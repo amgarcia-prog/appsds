@@ -233,7 +233,7 @@ function TabProvidentes() {
 
 // ── Modal de ingreso ─────────────────────────────────────────────────────────
 function ModalIngreso({ onClose, onGuardado, editando }) {
-  const [form, setForm] = useState(editando || { fecha: hoy(), tipo: 'donacion_servicio', concepto: '', valor: '', providente_id: '', punto_servicio_id: '', mes_aporte: '', comprobante_url: '' })
+  const [form, setForm] = useState(editando || { fecha: hoy(), tipo: 'donacion_servicio', concepto: '', valor: '', providente_id: '', providente_otro: '', punto_servicio_id: '', punto_servicio_otro: '', mes_aporte: '', comprobante_url: '', numero_recibo: '', forma_donacion: 'dinero' })
   const [providentes, setProvidentes] = useState([])
   const [puntos, setPuntos] = useState([])
   const [guardando, setGuardando] = useState(false)
@@ -268,8 +268,15 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
         </div>
 
         <div className="mb-3">
+          <label className="block text-xs text-gray-500 mb-0.5">Número de recibo</label>
+          <input value={form.numero_recibo} onChange={e => setForm(p => ({ ...p, numero_recibo: e.target.value }))}
+            placeholder="Ej: 1770"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <div className="mb-3">
           <label className="block text-xs text-gray-500 mb-0.5">Tipo *</label>
-          <select value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value, punto_servicio_id: '', mes_aporte: '' }))}
+          <select value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value, punto_servicio_id: '', punto_servicio_otro: '', mes_aporte: '' }))}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
             <option value="aporte_consagrado">Aporte consagrado</option>
             <option value="donacion_servicio">Donación para servicio</option>
@@ -283,7 +290,7 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
             <select value={form.mes_aporte} onChange={e => setForm(p => ({ ...p, mes_aporte: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="">Selecciona...</option>
-              {MESES.map((m, i) => <option key={m} value={m}>{m}</option>)}
+              {MESES.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
           </div>
         )}
@@ -291,13 +298,33 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
         {form.tipo === 'donacion_servicio' && (
           <div className="mb-3">
             <label className="block text-xs text-gray-500 mb-0.5">Servicio</label>
-            <select value={form.punto_servicio_id} onChange={e => setForm(p => ({ ...p, punto_servicio_id: e.target.value }))}
+            <select value={form.punto_servicio_id} onChange={e => setForm(p => ({ ...p, punto_servicio_id: e.target.value, punto_servicio_otro: '' }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="">Selecciona...</option>
               {puntos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+              <option value="__otro__">Otro...</option>
             </select>
+            {form.punto_servicio_id === '__otro__' && (
+              <input value={form.punto_servicio_otro} onChange={e => setForm(p => ({ ...p, punto_servicio_otro: e.target.value }))}
+                placeholder="Describe el servicio"
+                className="mt-2 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            )}
           </div>
         )}
+
+        <div className="mb-3">
+          <label className="block text-xs text-gray-500 mb-1">Forma de donación</label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-1.5 text-sm cursor-pointer">
+              <input type="radio" name="forma_donacion" value="dinero" checked={form.forma_donacion === 'dinero'} onChange={e => setForm(p => ({ ...p, forma_donacion: e.target.value }))} />
+              Dinero
+            </label>
+            <label className="flex items-center gap-1.5 text-sm cursor-pointer">
+              <input type="radio" name="forma_donacion" value="especie" checked={form.forma_donacion === 'especie'} onChange={e => setForm(p => ({ ...p, forma_donacion: e.target.value }))} />
+              Especie
+            </label>
+          </div>
+        </div>
 
         <div className="mb-3">
           <label className="block text-xs text-gray-500 mb-0.5">Concepto *</label>
@@ -315,12 +342,18 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
 
         {form.tipo !== 'costo_financiero' && (
           <div className="mb-3">
-            <label className="block text-xs text-gray-500 mb-0.5">Providente</label>
-            <select value={form.providente_id} onChange={e => setForm(p => ({ ...p, providente_id: e.target.value }))}
+            <label className="block text-xs text-gray-500 mb-0.5">Benefactor</label>
+            <select value={form.providente_id} onChange={e => setForm(p => ({ ...p, providente_id: e.target.value, providente_otro: '' }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="">Selecciona...</option>
               {providentes.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+              <option value="__otro__">Otro...</option>
             </select>
+            {form.providente_id === '__otro__' && (
+              <input value={form.providente_otro} onChange={e => setForm(p => ({ ...p, providente_otro: e.target.value }))}
+                placeholder="Nombre del benefactor"
+                className="mt-2 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            )}
           </div>
         )}
 
