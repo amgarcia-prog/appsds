@@ -537,11 +537,35 @@ function TabMovimientos() {
     msg('✅ Eliminado')
   }
 
+  const [saldoInicial, setSaldoInicial] = useState(0)
+  const [totalesHistoricos, setTotalesHistoricos] = useState({ totalIngresos: 0, totalEgresos: 0 })
+  const [editandoSaldo, setEditandoSaldo] = useState(false)
+  const [saldoInput, setSaldoInput] = useState('')
+
+  const cargarSaldo = async (cuenta) => {
+    if (cuenta === 'especie') return
+    const [s, t] = await Promise.all([
+      fetch(`${API_URL}/api/financiero/saldo-inicial?cuenta=${cuenta}`, { headers: H() }).then(r => r.json()).catch(() => ({ saldo: 0 })),
+      fetch(`${API_URL}/api/financiero/totales-cuenta?cuenta=${cuenta}`, { headers: H() }).then(r => r.json()).catch(() => ({ totalIngresos: 0, totalEgresos: 0 })),
+    ])
+    setSaldoInicial(s.saldo || 0)
+    setTotalesHistoricos(t)
+  }
+
+  useEffect(() => { cargarSaldo(cuentaTab) }, [cuentaTab])
+
+  const guardarSaldoInicial = async () => {
+    await fetch(`${API_URL}/api/financiero/saldo-inicial`, { method: 'PUT', headers: H(), body: JSON.stringify({ cuenta: cuentaTab, saldo: Number(saldoInput) }) })
+    setEditandoSaldo(false)
+    cargarSaldo(cuentaTab)
+  }
+
   const ingFiltrados = ingresos.filter(i => (i.cuenta || 'banco') === cuentaTab)
   const egrFiltrados = egresos.filter(e => (e.cuenta || 'banco') === cuentaTab)
   const totalIngresos = ingFiltrados.reduce((s, i) => s + Number(i.valor), 0)
   const totalEgresos = egrFiltrados.reduce((s, e) => s + Number(e.valor), 0)
   const saldo = totalIngresos - totalEgresos
+  const saldoReal = saldoInicial + totalesHistoricos.totalIngresos - totalesHistoricos.totalEgresos
   const esEspecie = cuentaTab === 'especie'
 
   const tipoLabel = { aporte_consagrado: 'Aporte consagrado', donacion_servicio: 'Donación', costo_financiero: 'Costo financiero' }
@@ -579,7 +603,45 @@ function TabMovimientos() {
 
       {mensaje && <p className="text-sm text-center py-2 bg-white border rounded-lg mb-3">{mensaje}</p>}
 
-      {/* Resumen */}
+      {/* Saldo real acumulado */}
+      {!esEspecie && (
+        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Saldo acumulado</span>
+            <button onClick={() => { setEditandoSaldo(true); setSaldoInput(String(saldoInicial)) }}
+              className="text-xs text-blue-600 hover:underline">Editar saldo inicial</button>
+          </div>
+          {editandoSaldo ? (
+            <div className="flex gap-2 items-center">
+              <input type="number" value={saldoInput} onChange={e => setSaldoInput(e.target.value)}
+                placeholder="Saldo inicial"
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <button onClick={guardarSaldoInicial} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700">Guardar</button>
+              <button onClick={() => setEditandoSaldo(false)} className="text-xs text-gray-500 hover:text-gray-700">Cancelar</button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <p className="text-xs text-gray-400">Saldo inicial</p>
+                <p className="text-sm font-semibold text-gray-600">{fmt(saldoInicial)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Movimientos</p>
+                <p className={`text-sm font-semibold ${(totalesHistoricos.totalIngresos - totalesHistoricos.totalEgresos) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {(totalesHistoricos.totalIngresos - totalesHistoricos.totalEgresos) >= 0 ? '+' : ''}{fmt(totalesHistoricos.totalIngresos - totalesHistoricos.totalEgresos)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Saldo actual</p>
+                <p className={`text-base font-bold ${saldoReal >= 0 ? 'text-blue-700' : 'text-red-700'}`}>{fmt(saldoReal)}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Resumen movimientos del mes */}
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Movimientos de {MESES[mes-1]} {anio}</p>
       {esEspecie ? (
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 text-center mb-5">
           <p className="text-xs text-purple-600 mb-1">Total donaciones en especie</p>
