@@ -544,17 +544,18 @@ function TabMovimientos() {
   const [editandoSaldo, setEditandoSaldo] = useState(false)
   const [saldoInput, setSaldoInput] = useState('')
 
-  const cargarSaldo = async (cuenta) => {
+  const cargarSaldo = async (cuenta, m, a) => {
     if (cuenta === 'especie') return
+    const hasta = `${a}-${String(m).padStart(2,'0')}-01`
     const [s, t] = await Promise.all([
       fetch(`${API_URL}/api/financiero/saldo-inicial?cuenta=${cuenta}`, { headers: H() }).then(r => r.json()).catch(() => ({ saldo: 0 })),
-      fetch(`${API_URL}/api/financiero/totales-cuenta?cuenta=${cuenta}`, { headers: H() }).then(r => r.json()).catch(() => ({ totalIngresos: 0, totalEgresos: 0 })),
+      fetch(`${API_URL}/api/financiero/totales-cuenta?cuenta=${cuenta}&hasta=${hasta}`, { headers: H() }).then(r => r.json()).catch(() => ({ totalIngresos: 0, totalEgresos: 0 })),
     ])
     setSaldoInicial(s.saldo || 0)
     setTotalesHistoricos(t)
   }
 
-  useEffect(() => { cargarSaldo(cuentaTab) }, [cuentaTab])
+  useEffect(() => { cargarSaldo(cuentaTab, mes, anio) }, [cuentaTab, mes, anio])
 
   const guardarSaldoInicial = async () => {
     await fetch(`${API_URL}/api/financiero/saldo-inicial`, { method: 'PUT', headers: H(), body: JSON.stringify({ cuenta: cuentaTab, saldo: Number(saldoInput) }) })
@@ -605,64 +606,47 @@ function TabMovimientos() {
 
       {mensaje && <p className="text-sm text-center py-2 bg-white border rounded-lg mb-3">{mensaje}</p>}
 
-      {/* Saldo real acumulado */}
-      {!esEspecie && (
+      {/* Resumen */}
+      {esEspecie ? (
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 text-center mb-5">
+          <p className="text-xs text-purple-600 mb-1">Total donaciones en especie — {MESES[mes-1]} {anio}</p>
+          <p className="text-lg font-bold text-purple-700">{fmt(totalIngresos)}</p>
+        </div>
+      ) : (
         <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Saldo acumulado</span>
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{MESES[mes-1]} {anio}</span>
             <button onClick={() => { setEditandoSaldo(true); setSaldoInput(String(saldoInicial)) }}
               className="text-xs text-blue-600 hover:underline">Editar saldo inicial</button>
           </div>
           {editandoSaldo ? (
             <div className="flex gap-2 items-center">
               <input type="number" value={saldoInput} onChange={e => setSaldoInput(e.target.value)}
-                placeholder="Saldo inicial"
+                placeholder="Saldo al inicio del sistema"
                 className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               <button onClick={guardarSaldoInicial} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700">Guardar</button>
               <button onClick={() => setEditandoSaldo(false)} className="text-xs text-gray-500 hover:text-gray-700">Cancelar</button>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div>
-                <p className="text-xs text-gray-400">Saldo inicial</p>
-                <p className="text-sm font-semibold text-gray-600">{fmt(saldoInicial)}</p>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Saldo mes anterior</span>
+                <span className="font-semibold text-gray-700">{fmt(saldoReal)}</span>
               </div>
-              <div>
-                <p className="text-xs text-gray-400">Movimientos</p>
-                <p className={`text-sm font-semibold ${(totalesHistoricos.totalIngresos - totalesHistoricos.totalEgresos) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {(totalesHistoricos.totalIngresos - totalesHistoricos.totalEgresos) >= 0 ? '+' : ''}{fmt(totalesHistoricos.totalIngresos - totalesHistoricos.totalEgresos)}
-                </p>
+              <div className="flex justify-between text-sm">
+                <span className="text-green-600">+ Ingresos {MESES[mes-1]}</span>
+                <span className="font-semibold text-green-700">{fmt(totalIngresos)}</span>
               </div>
-              <div>
-                <p className="text-xs text-gray-400">Saldo actual</p>
-                <p className={`text-base font-bold ${saldoReal >= 0 ? 'text-blue-700' : 'text-red-700'}`}>{fmt(saldoReal)}</p>
+              <div className="flex justify-between text-sm">
+                <span className="text-red-500">− Egresos {MESES[mes-1]}</span>
+                <span className="font-semibold text-red-700">{fmt(totalEgresos)}</span>
+              </div>
+              <div className="flex justify-between text-sm border-t border-gray-200 pt-2 mt-1">
+                <span className="font-bold text-gray-700">Saldo mes actual</span>
+                <span className={`text-base font-bold ${(saldoReal + saldo) >= 0 ? 'text-blue-700' : 'text-red-700'}`}>{fmt(saldoReal + saldo)}</span>
               </div>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Resumen movimientos del mes */}
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Movimientos de {MESES[mes-1]} {anio}</p>
-      {esEspecie ? (
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 text-center mb-5">
-          <p className="text-xs text-purple-600 mb-1">Total donaciones en especie</p>
-          <p className="text-lg font-bold text-purple-700">{fmt(totalIngresos)}</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 gap-3 mb-5">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-            <p className="text-xs text-green-600 mb-1">Ingresos</p>
-            <p className="text-sm font-bold text-green-700">{fmt(totalIngresos)}</p>
-          </div>
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
-            <p className="text-xs text-red-600 mb-1">Egresos</p>
-            <p className="text-sm font-bold text-red-700">{fmt(totalEgresos)}</p>
-          </div>
-          <div className={`${saldo >= 0 ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'} border rounded-lg p-3 text-center`}>
-            <p className={`text-xs mb-1 ${saldo >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>Saldo</p>
-            <p className={`text-sm font-bold ${saldo >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>{fmt(saldo)}</p>
-          </div>
         </div>
       )}
 
