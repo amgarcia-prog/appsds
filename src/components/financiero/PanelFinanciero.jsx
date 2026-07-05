@@ -957,6 +957,7 @@ function TabReportes() {
 
   const reportes = [
     { key: 'aportes-consagrados', label: 'Relación aportes consagrados', desc: 'Aportes consagrados del mes ordenados por benefactor' },
+    { key: 'donaciones', label: 'Relación de donaciones', desc: 'Donaciones del mes — sección especie y sección dinero con totales' },
   ]
 
   return (
