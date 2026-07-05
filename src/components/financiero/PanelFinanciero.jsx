@@ -964,7 +964,7 @@ function TabReportes() {
     { key: 'movimiento-banco', label: 'Movimiento banco', desc: 'Todos los ingresos y egresos del banco en orden de fecha con saldo acumulado' },
     { key: 'movimiento-caja-menor', label: 'Movimiento caja menor', desc: 'Ingresos y egresos de caja menor con saldo acumulado' },
     { key: 'consumo-caja-menor', label: 'Consumo caja menor', desc: 'Ingresos y egresos de consumo caja menor con saldo acumulado' },
-    { key: 'recibos-mes', label: 'Recibos de donación (ZIP)', desc: 'Descarga todos los recibos PDF del mes en un archivo ZIP' },
+    { key: 'recibos-mes', label: 'Recibos de donación (ZIP)', desc: 'Descarga todos los recibos PDF del mes en un archivo ZIP', formato: 'ZIP' },
   ]
 
   return (
@@ -989,7 +989,7 @@ function TabReportes() {
             </div>
             <button onClick={() => descargar(r.key)} disabled={descargando === r.key}
               className="flex items-center gap-1.5 text-sm bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 flex-shrink-0 ml-4">
-              {descargando === r.key ? 'Generando...' : '⬇ Excel'}
+              {descargando === r.key ? 'Generando...' : `⬇ ${r.formato || 'Excel'}`}
             </button>
           </div>
         ))}
