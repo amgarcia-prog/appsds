@@ -233,7 +233,7 @@ function TabProvidentes() {
 
 // ── Modal de ingreso ─────────────────────────────────────────────────────────
 function ModalIngreso({ onClose, onGuardado, editando }) {
-  const [form, setForm] = useState(editando || { fecha: hoy(), tipo: 'donacion_servicio', concepto: '', valor: '', providente_id: '', providente_otro: '', punto_servicio_id: '', punto_servicio_otro: '', mes_aporte: '', comprobante_url: '', numero_recibo: '', forma_donacion: 'dinero' })
+  const [form, setForm] = useState(editando || { fecha: hoy(), tipo: 'donacion_servicio', concepto: '', valor: '', providente_id: '', providente_otro: '', punto_servicio_id: '', punto_servicio_otro: '', mes_aporte: '', comprobante_url: '', numero_recibo: '', forma_donacion: 'dinero', cuenta: 'banco' })
   const [providentes, setProvidentes] = useState([])
   const [puntos, setPuntos] = useState([])
   const [guardando, setGuardando] = useState(false)
@@ -316,15 +316,27 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
           <label className="block text-xs text-gray-500 mb-1">Forma de donación</label>
           <div className="flex gap-4">
             <label className="flex items-center gap-1.5 text-sm cursor-pointer">
-              <input type="radio" name="forma_donacion" value="dinero" checked={form.forma_donacion === 'dinero'} onChange={e => setForm(p => ({ ...p, forma_donacion: e.target.value }))} />
+              <input type="radio" name="forma_donacion" value="dinero" checked={form.forma_donacion === 'dinero'} onChange={e => setForm(p => ({ ...p, forma_donacion: e.target.value, cuenta: p.cuenta === 'especie' ? 'banco' : p.cuenta }))} />
               Dinero
             </label>
             <label className="flex items-center gap-1.5 text-sm cursor-pointer">
-              <input type="radio" name="forma_donacion" value="especie" checked={form.forma_donacion === 'especie'} onChange={e => setForm(p => ({ ...p, forma_donacion: e.target.value }))} />
+              <input type="radio" name="forma_donacion" value="especie" checked={form.forma_donacion === 'especie'} onChange={e => setForm(p => ({ ...p, forma_donacion: e.target.value, cuenta: 'especie' }))} />
               Especie
             </label>
           </div>
         </div>
+
+        {form.forma_donacion === 'dinero' && (
+          <div className="mb-3">
+            <label className="block text-xs text-gray-500 mb-0.5">Cuenta</label>
+            <select value={form.cuenta} onChange={e => setForm(p => ({ ...p, cuenta: e.target.value }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="banco">Banco</option>
+              <option value="caja_menor">Caja Menor</option>
+              <option value="consumo_caja_menor">Consumo Caja Menor</option>
+            </select>
+          </div>
+        )}
 
         <div className="mb-3">
           <label className="block text-xs text-gray-500 mb-0.5">Concepto *</label>
@@ -379,7 +391,7 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
 
 // ── Modal de egreso ──────────────────────────────────────────────────────────
 function ModalEgreso({ onClose, onGuardado, editando }) {
-  const [form, setForm] = useState(editando || { fecha: hoy(), punto_servicio_id: '', concepto: '', valor: '', documento_url: '', es_costo_financiero: false })
+  const [form, setForm] = useState(editando || { fecha: hoy(), punto_servicio_id: '', concepto: '', valor: '', documento_url: '', es_costo_financiero: false, cuenta: 'banco' })
   const [puntos, setPuntos] = useState([])
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState('')
@@ -409,6 +421,16 @@ function ModalEgreso({ onClose, onGuardado, editando }) {
           <label className="block text-xs text-gray-500 mb-0.5">Fecha *</label>
           <input type="date" value={form.fecha} onChange={e => setForm(p => ({ ...p, fecha: e.target.value }))}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <div className="mb-3">
+          <label className="block text-xs text-gray-500 mb-0.5">Cuenta</label>
+          <select value={form.cuenta} onChange={e => setForm(p => ({ ...p, cuenta: e.target.value }))}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+            <option value="banco">Banco</option>
+            <option value="caja_menor">Caja Menor</option>
+            <option value="consumo_caja_menor">Consumo Caja Menor</option>
+          </select>
         </div>
 
         <div className="mb-3">
@@ -465,11 +487,19 @@ function ModalEgreso({ onClose, onGuardado, editando }) {
 }
 
 // ── Tab Movimientos ───────────────────────────────────────────────────────────
+const CUENTAS = [
+  { key: 'banco', label: 'Banco' },
+  { key: 'caja_menor', label: 'Caja Menor' },
+  { key: 'consumo_caja_menor', label: 'Consumo' },
+  { key: 'especie', label: 'Especie' },
+]
+
 function TabMovimientos() {
   const [mes, setMes] = useState(mesActual)
   const [anio, setAnio] = useState(anioActual)
   const [ingresos, setIngresos] = useState([])
   const [egresos, setEgresos] = useState([])
+  const [cuentaTab, setCuentaTab] = useState('banco')
   const [cargando, setCargando] = useState(false)
   const [modalIngreso, setModalIngreso] = useState(false)
   const [modalEgreso, setModalEgreso] = useState(false)
@@ -507,9 +537,12 @@ function TabMovimientos() {
     msg('✅ Eliminado')
   }
 
-  const totalIngresos = ingresos.reduce((s, i) => s + Number(i.valor), 0)
-  const totalEgresos = egresos.reduce((s, e) => s + Number(e.valor), 0)
+  const ingFiltrados = ingresos.filter(i => (i.cuenta || 'banco') === cuentaTab)
+  const egrFiltrados = egresos.filter(e => (e.cuenta || 'banco') === cuentaTab)
+  const totalIngresos = ingFiltrados.reduce((s, i) => s + Number(i.valor), 0)
+  const totalEgresos = egrFiltrados.reduce((s, e) => s + Number(e.valor), 0)
   const saldo = totalIngresos - totalEgresos
+  const esEspecie = cuentaTab === 'especie'
 
   const tipoLabel = { aporte_consagrado: 'Aporte consagrado', donacion_servicio: 'Donación', costo_financiero: 'Costo financiero' }
 
@@ -534,23 +567,40 @@ function TabMovimientos() {
         </select>
       </div>
 
+      {/* Sub-pestañas de cuenta */}
+      <div className="flex gap-1 mb-4 bg-gray-100 rounded-lg p-1">
+        {CUENTAS.map(c => (
+          <button key={c.key} onClick={() => setCuentaTab(c.key)}
+            className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${cuentaTab === c.key ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+            {c.label}
+          </button>
+        ))}
+      </div>
+
       {mensaje && <p className="text-sm text-center py-2 bg-white border rounded-lg mb-3">{mensaje}</p>}
 
       {/* Resumen */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-          <p className="text-xs text-green-600 mb-1">Ingresos</p>
-          <p className="text-sm font-bold text-green-700">{fmt(totalIngresos)}</p>
+      {esEspecie ? (
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 text-center mb-5">
+          <p className="text-xs text-purple-600 mb-1">Total donaciones en especie</p>
+          <p className="text-lg font-bold text-purple-700">{fmt(totalIngresos)}</p>
         </div>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
-          <p className="text-xs text-red-600 mb-1">Egresos</p>
-          <p className="text-sm font-bold text-red-700">{fmt(totalEgresos)}</p>
+      ) : (
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+            <p className="text-xs text-green-600 mb-1">Ingresos</p>
+            <p className="text-sm font-bold text-green-700">{fmt(totalIngresos)}</p>
+          </div>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+            <p className="text-xs text-red-600 mb-1">Egresos</p>
+            <p className="text-sm font-bold text-red-700">{fmt(totalEgresos)}</p>
+          </div>
+          <div className={`${saldo >= 0 ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'} border rounded-lg p-3 text-center`}>
+            <p className={`text-xs mb-1 ${saldo >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>Saldo</p>
+            <p className={`text-sm font-bold ${saldo >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>{fmt(saldo)}</p>
+          </div>
         </div>
-        <div className={`${saldo >= 0 ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'} border rounded-lg p-3 text-center`}>
-          <p className={`text-xs mb-1 ${saldo >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>Saldo</p>
-          <p className={`text-sm font-bold ${saldo >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>{fmt(saldo)}</p>
-        </div>
-      </div>
+      )}
 
       {/* Ingresos */}
       <div className="mb-5">
@@ -559,19 +609,21 @@ function TabMovimientos() {
           <button onClick={() => setModalIngreso(true)} className="text-xs bg-green-600 text-white px-2.5 py-1 rounded-lg hover:bg-green-700">+ Agregar</button>
         </div>
         {cargando ? <p className="text-xs text-gray-400 py-2">Cargando...</p> :
-          ingresos.length === 0 ? <p className="text-xs text-gray-400 py-2">Sin ingresos este mes</p> : (
+          ingFiltrados.length === 0 ? <p className="text-xs text-gray-400 py-2">Sin ingresos este mes</p> : (
             <div className="space-y-2">
-              {ingresos.map(i => (
+              {ingFiltrados.map(i => (
                 <div key={i.id} className="bg-white border border-gray-200 rounded-lg p-3">
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">{tipoLabel[i.tipo]}</span>
                         {i.punto?.nombre && <span className="text-xs text-gray-500">{i.punto.nombre}</span>}
+                        {i.punto_servicio_otro && <span className="text-xs text-gray-500">{i.punto_servicio_otro}</span>}
                         {i.mes_aporte && <span className="text-xs text-gray-500">{i.mes_aporte}</span>}
+                        {i.numero_recibo && <span className="text-xs text-gray-400">#{i.numero_recibo}</span>}
                       </div>
                       <p className="text-sm text-gray-800 mt-1">{i.concepto}</p>
-                      {i.providente?.nombre && <p className="text-xs text-gray-400">{i.providente.nombre}</p>}
+                      {(i.providente?.nombre || i.providente_otro) && <p className="text-xs text-gray-400">{i.providente?.nombre || i.providente_otro}</p>}
                       <p className="text-xs text-gray-400">{i.fecha}</p>
                     </div>
                     <div className="ml-2 text-right flex-shrink-0">
@@ -589,16 +641,16 @@ function TabMovimientos() {
           )}
       </div>
 
-      {/* Egresos */}
-      <div>
+      {/* Egresos — no aplica para especie */}
+      {!esEspecie && <div>
         <div className="flex items-center justify-between mb-2">
           <h4 className="font-semibold text-gray-700 text-sm">Egresos</h4>
           <button onClick={() => setModalEgreso(true)} className="text-xs bg-red-600 text-white px-2.5 py-1 rounded-lg hover:bg-red-700">+ Agregar</button>
         </div>
         {cargando ? <p className="text-xs text-gray-400 py-2">Cargando...</p> :
-          egresos.length === 0 ? <p className="text-xs text-gray-400 py-2">Sin egresos este mes</p> : (
+          egrFiltrados.length === 0 ? <p className="text-xs text-gray-400 py-2">Sin egresos este mes</p> : (
             <div className="space-y-2">
-              {egresos.map(e => (
+              {egrFiltrados.map(e => (
                 <div key={e.id} className="bg-white border border-gray-200 rounded-lg p-3">
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
@@ -624,7 +676,7 @@ function TabMovimientos() {
               ))}
             </div>
           )}
-      </div>
+      </div>}
     </div>
   )
 }
