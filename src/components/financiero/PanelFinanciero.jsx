@@ -959,6 +959,8 @@ function TabReportes() {
     { key: 'aportes-consagrados', label: 'Relación aportes consagrados', desc: 'Aportes consagrados del mes ordenados por benefactor' },
     { key: 'donaciones', label: 'Relación de donaciones', desc: 'Donaciones del mes — sección especie y sección dinero con totales' },
     { key: 'movimiento-banco', label: 'Movimiento banco', desc: 'Todos los ingresos y egresos del banco en orden de fecha con saldo acumulado' },
+    { key: 'movimiento-caja-menor', label: 'Movimiento caja menor', desc: 'Ingresos y egresos de caja menor con saldo acumulado' },
+    { key: 'consumo-caja-menor', label: 'Consumo caja menor', desc: 'Ingresos y egresos de consumo caja menor con saldo acumulado' },
   ]
 
   return (
