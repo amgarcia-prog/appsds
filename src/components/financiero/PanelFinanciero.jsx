@@ -489,8 +489,8 @@ function ModalEgreso({ onClose, onGuardado, editando }) {
 // ── Tab Movimientos ───────────────────────────────────────────────────────────
 const CUENTAS = [
   { key: 'banco', label: 'Banco' },
-  { key: 'caja_menor', label: 'Caja Menor' },
-  { key: 'consumo_caja_menor', label: 'Consumo' },
+  { key: 'caja_menor', label: 'Mov. Caja Menor' },
+  { key: 'consumo_caja_menor', label: 'Consumo Caja Menor' },
   { key: 'especie', label: 'Especie' },
 ]
 
