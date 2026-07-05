@@ -812,6 +812,61 @@ function TabEquipo() {
 }
 
 // ── Panel principal ───────────────────────────────────────────────────────────
+function TabReportes() {
+  const [mes, setMes] = useState(mesActual)
+  const [anio, setAnio] = useState(anioActual)
+  const [descargando, setDescargando] = useState('')
+
+  const descargar = async (tipo) => {
+    setDescargando(tipo)
+    const params = `mes=${mes}&anio=${anio}`
+    const res = await fetch(`${API_URL}/api/financiero/reporte/${tipo}?${params}`, { headers: { 'x-miembro-id': JSON.parse(localStorage.getItem('miembro_sesion') || '{}').id } })
+    if (!res.ok) { setDescargando(''); return alert('Error al generar el reporte') }
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = res.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g,'') || `${tipo}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
+    setDescargando('')
+  }
+
+  const reportes = [
+    { key: 'aportes-consagrados', label: 'Relación aportes consagrados', desc: 'Aportes consagrados del mes ordenados por benefactor' },
+  ]
+
+  return (
+    <div>
+      <div className="flex gap-2 mb-6">
+        <select value={mes} onChange={e => setMes(Number(e.target.value))}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+          {MESES.map((m, i) => <option key={m} value={i+1}>{m}</option>)}
+        </select>
+        <select value={anio} onChange={e => setAnio(Number(e.target.value))}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+          {[anioActual-1, anioActual, anioActual+1].map(a => <option key={a} value={a}>{a}</option>)}
+        </select>
+      </div>
+
+      <div className="space-y-3">
+        {reportes.map(r => (
+          <div key={r.key} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-gray-800">{r.label}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{r.desc}</p>
+            </div>
+            <button onClick={() => descargar(r.key)} disabled={descargando === r.key}
+              className="flex items-center gap-1.5 text-sm bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 flex-shrink-0 ml-4">
+              {descargando === r.key ? 'Generando...' : '⬇ Excel'}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function PanelFinanciero() {
   const [tab, setTab] = useState('movimientos')
 
@@ -819,6 +874,7 @@ export default function PanelFinanciero() {
     { key: 'movimientos', label: 'Movimientos' },
     { key: 'providentes', label: 'Providentes' },
     { key: 'equipo', label: 'Equipo' },
+    { key: 'reportes', label: 'Reportes' },
   ]
 
   return (
@@ -837,6 +893,7 @@ export default function PanelFinanciero() {
       {tab === 'movimientos' && <TabMovimientos />}
       {tab === 'providentes' && <TabProvidentes />}
       {tab === 'equipo' && <TabEquipo />}
+      {tab === 'reportes' && <TabReportes />}
     </div>
   )
 }
