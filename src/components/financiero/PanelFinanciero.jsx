@@ -7,7 +7,7 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto'
 const anioActual = new Date().getFullYear()
 const mesActual = new Date().getMonth() + 1
 
-function fmt(v) { return Number(v).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }) }
+function fmt(v) { return Number(v).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
 function hoy() { return new Date().toISOString().split('T')[0] }
 
 // ── Selector de archivo (cargar, cámara, pegar) ───────────────────────────────
