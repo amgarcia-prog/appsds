@@ -821,44 +821,47 @@ function TabEquipo() {
 
 // ── Panel principal ───────────────────────────────────────────────────────────
 function ConsultaMovimientoBanco() {
-  const [mes, setMes] = useState(mesActual)
-  const [anio, setAnio] = useState(anioActual)
+  const hoy = new Date().toISOString().slice(0, 10)
+  const primerDiaMes = `${anioActual}-${mesActual}-01`
+  const [desde, setDesde] = useState(primerDiaMes)
+  const [hasta, setHasta] = useState(hoy)
   const [datos, setDatos] = useState(null)
   const [cargando, setCargando] = useState(false)
+  const [consultado, setConsultado] = useState(false)
 
-  useEffect(() => {
+  const consultar = () => {
+    if (!desde || !hasta) return
     setCargando(true)
     setDatos(null)
-    fetch(`${API_URL}/api/financiero/consulta/movimiento-banco?mes=${mes}&anio=${anio}`, { headers: H() })
+    setConsultado(true)
+    fetch(`${API_URL}/api/financiero/consulta/movimiento-banco?desde=${desde}&hasta=${hasta}`, { headers: H() })
       .then(r => r.json()).catch(() => null)
       .then(d => { setDatos(d); setCargando(false) })
-  }, [mes, anio])
+  }
 
   const totalIngresos = (datos?.movimientos || []).reduce((s, r) => s + (r.ingreso || 0), 0)
   const totalEgresos = (datos?.movimientos || []).reduce((s, r) => s + (r.egreso || 0), 0)
 
   return (
     <div>
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 items-end">
         <div className="flex-1">
-          <label className="block text-xs text-gray-500 mb-0.5">Mes</label>
-          <select value={mes} onChange={e => setMes(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            {['01','02','03','04','05','06','07','08','09','10','11','12'].map((m, i) =>
-              <option key={m} value={m}>{['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][i]}</option>
-            )}
-          </select>
+          <label className="block text-xs text-gray-500 mb-0.5">Desde</label>
+          <input type="date" value={desde} onChange={e => setDesde(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
         <div className="flex-1">
-          <label className="block text-xs text-gray-500 mb-0.5">Año</label>
-          <select value={anio} onChange={e => setAnio(Number(e.target.value))}
-            className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            {[anioActual-2, anioActual-1, anioActual].map(a => <option key={a} value={a}>{a}</option>)}
-          </select>
+          <label className="block text-xs text-gray-500 mb-0.5">Hasta</label>
+          <input type="date" value={hasta} onChange={e => setHasta(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
+        <button onClick={consultar} disabled={cargando}
+          className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50">
+          {cargando ? '...' : 'Consultar'}
+        </button>
       </div>
 
-      {cargando ? (
+      {!consultado ? null : cargando ? (
         <p className="text-sm text-gray-400 text-center py-8">Cargando...</p>
       ) : !datos ? (
         <p className="text-sm text-red-400 text-center py-8">Error cargando datos</p>
