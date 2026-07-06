@@ -1059,7 +1059,7 @@ function TabReportes() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    const ext = tipo === 'recibos-mes' ? 'zip' : 'xlsx'
+    const ext = tipo === 'recibos-mes' ? 'zip' : tipo.startsWith('imagenes') ? 'pdf' : 'xlsx'
     a.download = res.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g,'') || `${tipo}.${ext}`
     a.click()
     URL.revokeObjectURL(url)
@@ -1073,6 +1073,7 @@ function TabReportes() {
     { key: 'movimiento-caja-menor', label: 'Movimiento caja menor', desc: 'Ingresos y egresos de caja menor con saldo acumulado' },
     { key: 'consumo-caja-menor', label: 'Consumo caja menor', desc: 'Ingresos y egresos de consumo caja menor con saldo acumulado' },
     { key: 'recibos-mes', label: 'Recibos de donación (ZIP)', desc: 'Descarga todos los recibos PDF del mes en un archivo ZIP', formato: 'ZIP' },
+    { key: 'imagenes-banco', label: 'Imágenes banco', desc: 'PDF con todas las fotos de soportes del banco en el mes', formato: 'PDF' },
   ]
 
   return (
