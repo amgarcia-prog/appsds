@@ -1055,6 +1055,12 @@ function TabReportes() {
     const params = `mes=${mes}&anio=${anio}`
     const res = await fetch(`${API_URL}/api/financiero/reporte/${tipo}?${params}`, { headers: { 'x-miembro-id': JSON.parse(localStorage.getItem('miembro_sesion') || '{}').id } })
     if (!res.ok) { setDescargando(''); return alert('Error al generar el reporte') }
+    const ct = res.headers.get('Content-Type') || ''
+    if (ct.includes('application/json')) {
+      const json = await res.json()
+      setDescargando('')
+      return alert(json.mensaje || 'Sin datos para este período')
+    }
     const blob = await res.blob()
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
