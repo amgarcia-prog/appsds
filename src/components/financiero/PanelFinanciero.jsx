@@ -952,7 +952,8 @@ function TabReportes() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = res.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g,'') || `${tipo}.xlsx`
+    const ext = tipo === 'recibos-mes' ? 'zip' : 'xlsx'
+    a.download = res.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g,'') || `${tipo}.${ext}`
     a.click()
     URL.revokeObjectURL(url)
     setDescargando('')
