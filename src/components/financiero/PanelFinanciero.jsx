@@ -1078,8 +1078,10 @@ function TabReportes() {
     { key: 'movimiento-banco', label: 'Movimiento banco', desc: 'Todos los ingresos y egresos del banco en orden de fecha con saldo acumulado' },
     { key: 'movimiento-caja-menor', label: 'Movimiento caja menor', desc: 'Ingresos y egresos de caja menor con saldo acumulado' },
     { key: 'consumo-caja-menor', label: 'Consumo caja menor', desc: 'Ingresos y egresos de consumo caja menor con saldo acumulado' },
-    { key: 'recibos-mes', label: 'Recibos de donación (ZIP)', desc: 'Descarga todos los recibos PDF del mes en un archivo ZIP', formato: 'ZIP' },
-    { key: 'imagenes-banco', label: 'Imágenes banco', desc: 'PDF con todas las fotos de soportes del banco en el mes', formato: 'PDF' },
+    { key: 'recibos-mes', label: 'Recibos de donación (ZIP)', desc: 'Recibos PDF del mes en ZIP', formato: 'ZIP' },
+    { key: 'imagenes-banco', label: 'Imágenes banco', desc: 'Soportes fotográficos banco', formato: 'PDF' },
+    { key: 'imagenes-caja-menor', label: 'Imágenes caja menor', desc: 'Soportes fotográficos caja menor', formato: 'PDF' },
+    { key: 'imagenes-consumo-caja-menor', label: 'Imágenes consumo', desc: 'Soportes fotográficos consumo caja menor', formato: 'PDF' },
   ]
 
   return (
@@ -1095,15 +1097,15 @@ function TabReportes() {
         </select>
       </div>
 
-      <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
         {reportes.map(r => (
-          <div key={r.key} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+          <div key={r.key} className="bg-white border border-gray-200 rounded-xl p-3 flex flex-col gap-2">
             <div>
               <p className="text-sm font-semibold text-gray-800">{r.label}</p>
               <p className="text-xs text-gray-400 mt-0.5">{r.desc}</p>
             </div>
             <button onClick={() => descargar(r.key)} disabled={descargando === r.key}
-              className="flex items-center gap-1.5 text-sm bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 flex-shrink-0 ml-4">
+              className="w-full text-sm bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 text-center">
               {descargando === r.key ? 'Generando...' : `⬇ ${r.formato || 'Excel'}`}
             </button>
           </div>
