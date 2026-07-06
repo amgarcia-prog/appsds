@@ -822,23 +822,17 @@ function TabEquipo() {
 // ── Panel principal ───────────────────────────────────────────────────────────
 function TabConsultas() {
   const [providentes, setProvidentes] = useState([])
-  const [providenteId, setProvidenteId] = useState('')
   const [anio, setAnio] = useState(anioActual)
   const [aportes, setAportes] = useState([])
   const [cargando, setCargando] = useState(false)
-  const [buscado, setBuscado] = useState(false)
+  const [expandido, setExpandido] = useState({})
 
   useEffect(() => {
     fetch(`${API_URL}/api/financiero/providentes`, { headers: H() }).then(r => r.json()).then(d => setProvidentes(Array.isArray(d) ? d : []))
   }, [])
 
-  const consultar = async () => {
-    if (!providenteId) return
+  useEffect(() => {
     setCargando(true)
-    setBuscado(true)
-    const params = `providente_id=${providenteId}&anio=${anio}`
-    const data = await fetch(`${API_URL}/api/financiero/consulta/aportes-benefactor?${params}`, { headers: H() }).then(r => r.json()).catch(() => [])
-    const lista = Array.isArray(data) ? data : []
     const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
     const mesIdx = (m) => {
       if (!m) return 999
@@ -847,91 +841,91 @@ function TabConsultas() {
       const yr = parts[1] ? parseInt(parts[1]) : 0
       return yr * 100 + idx
     }
-    lista.sort((a, b) => mesIdx(a.mes_aporte) - mesIdx(b.mes_aporte) || a.fecha.localeCompare(b.fecha))
-    setAportes(lista)
-    setCargando(false)
-  }
+    fetch(`${API_URL}/api/financiero/consulta/aportes-benefactor?anio=${anio}`, { headers: H() })
+      .then(r => r.json()).catch(() => [])
+      .then(data => {
+        const lista = Array.isArray(data) ? data : []
+        lista.sort((a, b) => mesIdx(a.mes_aporte) - mesIdx(b.mes_aporte) || a.fecha.localeCompare(b.fecha))
+        setAportes(lista)
+        setCargando(false)
+      })
+  }, [anio])
 
-  const providente = providentes.find(p => p.id === providenteId)
-  const total = aportes.reduce((s, a) => s + Number(a.valor), 0)
-  const mesesAportados = [...new Set(aportes.map(a => a.mes_aporte).filter(Boolean))]
+  const porBenefactor = aportes.reduce((acc, a) => {
+    const key = a.providente_id || a.providente_otro || 'sin_nombre'
+    if (!acc[key]) acc[key] = []
+    acc[key].push(a)
+    return acc
+  }, {})
+
+  const grupos = Object.entries(porBenefactor).map(([key, items]) => {
+    const prov = providentes.find(p => p.id === key)
+    const nombre = prov?.nombre || items[0]?.providente_otro || 'Sin nombre'
+    const total = items.reduce((s, a) => s + Number(a.valor), 0)
+    const meses = [...new Set(items.map(a => a.mes_aporte).filter(Boolean))]
+    return { key, nombre, items, total, meses }
+  }).sort((a, b) => a.nombre.localeCompare(b.nombre))
+
+  const totalGeneral = aportes.reduce((s, a) => s + Number(a.valor), 0)
 
   return (
     <div>
-      <h3 className="font-bold text-blue-800 text-base mb-4">Histórico de aportes por benefactor</h3>
-
-      <div className="flex flex-col gap-3 mb-4">
-        <div>
-          <label className="block text-xs text-gray-500 mb-0.5">Benefactor</label>
-          <select value={providenteId} onChange={e => { setProvidenteId(e.target.value); setBuscado(false) }}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="">Selecciona un benefactor...</option>
-            {providentes.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-          </select>
-        </div>
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <label className="block text-xs text-gray-500 mb-0.5">Año</label>
-            <select value={anio} onChange={e => { setAnio(Number(e.target.value)); setBuscado(false) }}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-              {[anioActual-2, anioActual-1, anioActual].map(a => <option key={a} value={a}>{a}</option>)}
-            </select>
-          </div>
-          <div className="flex items-end">
-            <button onClick={consultar} disabled={!providenteId || cargando}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50">
-              {cargando ? 'Consultando...' : 'Consultar'}
-            </button>
-          </div>
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-bold text-blue-800 text-base">Aportes consagrados {anio}</h3>
+        <select value={anio} onChange={e => setAnio(Number(e.target.value))}
+          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+          {[anioActual-2, anioActual-1, anioActual].map(a => <option key={a} value={a}>{a}</option>)}
+        </select>
       </div>
 
-      {buscado && !cargando && (
+      {cargando ? (
+        <p className="text-sm text-gray-400 text-center py-8">Cargando...</p>
+      ) : grupos.length === 0 ? (
+        <p className="text-sm text-gray-400 text-center py-8">Sin aportes registrados en {anio}</p>
+      ) : (
         <>
-          {providente && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-              <p className="text-sm font-semibold text-blue-800">{providente.nombre}</p>
-              {providente.numero_identificacion && <p className="text-xs text-blue-600">CC {providente.numero_identificacion}</p>}
-              {providente.telefono && <p className="text-xs text-blue-600">{providente.telefono}</p>}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+              <p className="text-xs text-green-600 mb-1">Total {anio}</p>
+              <p className="text-base font-bold text-green-700">{fmt(totalGeneral)}</p>
             </div>
-          )}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+              <p className="text-xs text-blue-600 mb-1">Benefactores activos</p>
+              <p className="text-base font-bold text-blue-700">{grupos.length}</p>
+            </div>
+          </div>
 
-          {aportes.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">Sin aportes registrados en {anio}</p>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-                  <p className="text-xs text-green-600 mb-1">Total aportado {anio}</p>
-                  <p className="text-base font-bold text-green-700">{fmt(total)}</p>
-                </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
-                  <p className="text-xs text-blue-600 mb-1">Meses aportados</p>
-                  <p className="text-base font-bold text-blue-700">{mesesAportados.length} / 12</p>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                {aportes.map(a => (
-                  <div key={a.id} className="bg-white border border-gray-200 rounded-lg p-3 flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        {a.mes_aporte && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{a.mes_aporte}</span>}
-                        {a.numero_recibo && <span className="text-xs text-gray-400">#{a.numero_recibo}</span>}
-                      </div>
-                      <p className="text-xs text-gray-400 mt-0.5">{a.fecha}</p>
-                    </div>
-                    <p className="text-sm font-bold text-green-700">{fmt(Number(a.valor))}</p>
+          <div className="space-y-2">
+            {grupos.map(g => (
+              <div key={g.key} className="border border-gray-200 rounded-lg overflow-hidden">
+                <button onClick={() => setExpandido(e => ({ ...e, [g.key]: !e[g.key] }))}
+                  className="w-full flex items-center justify-between p-3 bg-white hover:bg-gray-50 text-left">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">{g.nombre}</p>
+                    <p className="text-xs text-gray-400">{g.meses.length} {g.meses.length === 1 ? 'mes' : 'meses'} · {g.items.length} {g.items.length === 1 ? 'registro' : 'registros'}</p>
                   </div>
-                ))}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-green-700">{fmt(g.total)}</span>
+                    <span className="text-gray-400 text-xs">{expandido[g.key] ? '▲' : '▼'}</span>
+                  </div>
+                </button>
+                {expandido[g.key] && (
+                  <div className="border-t border-gray-100 bg-gray-50 divide-y divide-gray-100">
+                    {g.items.map(a => (
+                      <div key={a.id} className="flex items-center justify-between px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          {a.mes_aporte && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{a.mes_aporte}</span>}
+                          {a.numero_recibo && <span className="text-xs text-gray-400">#{a.numero_recibo}</span>}
+                          <span className="text-xs text-gray-400">{a.fecha}</span>
+                        </div>
+                        <span className="text-sm font-bold text-green-700">{fmt(Number(a.valor))}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-
-              <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
-                <span className="text-sm font-bold text-gray-700">Total</span>
-                <span className="text-sm font-bold text-green-700">{fmt(total)}</span>
-              </div>
-            </>
-          )}
+            ))}
+          </div>
         </>
       )}
     </div>
