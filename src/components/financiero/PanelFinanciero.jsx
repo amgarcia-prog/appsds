@@ -820,7 +820,105 @@ function TabEquipo() {
 }
 
 // ── Panel principal ───────────────────────────────────────────────────────────
+function ConsultaMovimientoBanco() {
+  const [mes, setMes] = useState(mesActual)
+  const [anio, setAnio] = useState(anioActual)
+  const [datos, setDatos] = useState(null)
+  const [cargando, setCargando] = useState(false)
+
+  useEffect(() => {
+    setCargando(true)
+    setDatos(null)
+    fetch(`${API_URL}/api/financiero/consulta/movimiento-banco?mes=${mes}&anio=${anio}`, { headers: H() })
+      .then(r => r.json()).catch(() => null)
+      .then(d => { setDatos(d); setCargando(false) })
+  }, [mes, anio])
+
+  const totalIngresos = (datos?.movimientos || []).reduce((s, r) => s + (r.ingreso || 0), 0)
+  const totalEgresos = (datos?.movimientos || []).reduce((s, r) => s + (r.egreso || 0), 0)
+
+  return (
+    <div>
+      <div className="flex gap-2 mb-4">
+        <div className="flex-1">
+          <label className="block text-xs text-gray-500 mb-0.5">Mes</label>
+          <select value={mes} onChange={e => setMes(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+            {['01','02','03','04','05','06','07','08','09','10','11','12'].map((m, i) =>
+              <option key={m} value={m}>{['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][i]}</option>
+            )}
+          </select>
+        </div>
+        <div className="flex-1">
+          <label className="block text-xs text-gray-500 mb-0.5">Año</label>
+          <select value={anio} onChange={e => setAnio(Number(e.target.value))}
+            className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+            {[anioActual-2, anioActual-1, anioActual].map(a => <option key={a} value={a}>{a}</option>)}
+          </select>
+        </div>
+      </div>
+
+      {cargando ? (
+        <p className="text-sm text-gray-400 text-center py-8">Cargando...</p>
+      ) : !datos ? (
+        <p className="text-sm text-red-400 text-center py-8">Error cargando datos</p>
+      ) : (
+        <>
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-center">
+              <p className="text-xs text-gray-500 mb-0.5">Saldo anterior</p>
+              <p className="text-sm font-bold text-gray-700">{fmt(datos.saldoAnterior)}</p>
+            </div>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-2 text-center">
+              <p className="text-xs text-green-600 mb-0.5">Ingresos</p>
+              <p className="text-sm font-bold text-green-700">{fmt(totalIngresos)}</p>
+            </div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-2 text-center">
+              <p className="text-xs text-red-500 mb-0.5">Egresos</p>
+              <p className="text-sm font-bold text-red-600">{fmt(totalEgresos)}</p>
+            </div>
+          </div>
+
+          {datos.movimientos.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-6">Sin movimientos en este período</p>
+          ) : (
+            <div className="space-y-2">
+              {datos.movimientos.map(r => (
+                <div key={r.id} className="bg-white border border-gray-200 rounded-lg p-3">
+                  <div className="flex items-start justify-between mb-1">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-400">{r.fecha}</span>
+                        {r.comprobante && <span className="text-xs text-gray-400">#{r.comprobante}</span>}
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${r.ingreso ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                          {r.ingreso ? 'Ingreso' : 'Egreso'}
+                        </span>
+                      </div>
+                      {r.benefactor && <p className="text-sm font-medium text-gray-800 mt-0.5">{r.benefactor}</p>}
+                      <div className="flex gap-2 mt-0.5">
+                        {r.servicio && <span className="text-xs text-gray-500">{r.servicio}</span>}
+                        {r.concepto && <span className="text-xs text-gray-400">{r.concepto}</span>}
+                      </div>
+                    </div>
+                    <div className="text-right ml-2">
+                      <p className={`text-sm font-bold ${r.ingreso ? 'text-green-700' : 'text-red-600'}`}>
+                        {r.ingreso ? `+${fmt(r.ingreso)}` : `-${fmt(r.egreso)}`}
+                      </p>
+                      <p className="text-xs text-gray-400">Saldo: {fmt(r.saldo)}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 function TabConsultas() {
+  const [subtab, setSubtab] = useState('aportes')
   const [providentes, setProvidentes] = useState([])
   const [anio, setAnio] = useState(anioActual)
   const [aportes, setAportes] = useState([])
@@ -870,6 +968,17 @@ function TabConsultas() {
 
   return (
     <div>
+      <div className="flex gap-1 mb-5 bg-gray-100 rounded-lg p-1">
+        {[{ key: 'aportes', label: 'Aportes consagrados' }, { key: 'banco', label: 'Movimiento banco' }].map(s => (
+          <button key={s.key} onClick={() => setSubtab(s.key)}
+            className={`flex-1 text-sm py-1.5 rounded-md font-medium transition-colors ${subtab === s.key ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      {subtab === 'banco' ? <ConsultaMovimientoBanco /> : <>
+
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-bold text-blue-800 text-base">Aportes consagrados {anio}</h3>
         <select value={anio} onChange={e => setAnio(Number(e.target.value))}
@@ -928,6 +1037,7 @@ function TabConsultas() {
           </div>
         </>
       )}
+      </>}
     </div>
   )
 }
