@@ -501,6 +501,56 @@ const CUENTAS = [
   { key: 'especie', label: 'Especie' },
 ]
 
+function ModalReciboOpciones({ ingreso, onClose }) {
+  const [enviando, setEnviando] = useState(false)
+  const [mensaje, setMensaje] = useState('')
+  const correo = ingreso.providente?.correo || null
+
+  const descargar = () => {
+    fetch(`${API_URL}/api/financiero/recibo/${ingreso.id}`, { headers: H() })
+      .then(r => r.blob()).then(b => {
+        const u = URL.createObjectURL(b)
+        const a = document.createElement('a')
+        a.href = u; a.download = `recibo_${ingreso.numero_recibo || ingreso.id.substring(0,8)}.pdf`
+        a.click(); URL.revokeObjectURL(u)
+      })
+    onClose()
+  }
+
+  const enviar = async () => {
+    setEnviando(true)
+    const res = await fetch(`${API_URL}/api/financiero/enviar-recibo/${ingreso.id}`, { method: 'POST', headers: H() }).then(r => r.json()).catch(() => ({ ok: false, mensaje: 'Error de conexión' }))
+    setEnviando(false)
+    setMensaje(res.ok ? `✅ ${res.mensaje}` : `❌ ${res.mensaje}`)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+        <h3 className="font-bold text-gray-800 text-base mb-1">Recibo #{ingreso.numero_recibo || ingreso.id.substring(0,8)}</h3>
+        <p className="text-sm text-gray-500 mb-5">{ingreso.providente?.nombre || ingreso.providente_otro || '—'}</p>
+
+        {mensaje ? (
+          <div className="text-sm text-center py-3">{mensaje}</div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <button onClick={descargar}
+              className="w-full bg-blue-600 text-white py-2.5 rounded-xl font-semibold hover:bg-blue-700">
+              ⬇ Descargar PDF
+            </button>
+            <button onClick={enviar} disabled={!correo || enviando}
+              className={`w-full py-2.5 rounded-xl font-semibold border ${correo ? 'border-green-600 text-green-700 hover:bg-green-50' : 'border-gray-200 text-gray-400 cursor-not-allowed'}`}>
+              {enviando ? 'Enviando...' : correo ? `✉ Enviar a ${correo}` : '✉ Sin correo registrado'}
+            </button>
+          </div>
+        )}
+
+        <button onClick={onClose} className="mt-4 w-full text-sm text-gray-400 hover:text-gray-600">Cerrar</button>
+      </div>
+    </div>
+  )
+}
+
 function TabMovimientos() {
   const [mes, setMes] = useState(mesActual)
   const [anio, setAnio] = useState(anioActual)
@@ -512,6 +562,7 @@ function TabMovimientos() {
   const [modalEgreso, setModalEgreso] = useState(false)
   const [editandoIngreso, setEditandoIngreso] = useState(null)
   const [editandoEgreso, setEditandoEgreso] = useState(null)
+  const [modalRecibo, setModalRecibo] = useState(null)
   const [mensaje, setMensaje] = useState('')
 
   const msg = (m) => { setMensaje(m); setTimeout(() => setMensaje(''), 3000) }
@@ -683,9 +734,8 @@ function TabMovimientos() {
                       <p className="text-sm font-bold text-green-700">{fmt(i.valor)}</p>
                       <div className="flex gap-2 justify-end mt-1">
                         {i.comprobante_url && <a href={i.comprobante_url} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline">Ver</a>}
-                        <a href={`${API_URL}/api/financiero/recibo/${i.id}`} target="_blank" rel="noreferrer"
-                          onClick={e => { e.preventDefault(); fetch(`${API_URL}/api/financiero/recibo/${i.id}`, { headers: H() }).then(r => r.blob()).then(b => { const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download=`recibo_${i.numero_recibo||i.id.substring(0,8)}.pdf`; a.click(); URL.revokeObjectURL(u) }) }}
-                          className="text-xs text-purple-600 hover:text-purple-800 cursor-pointer">PDF</a>
+                        <button onClick={() => cuentaTab === 'banco' ? setModalRecibo(i) : fetch(`${API_URL}/api/financiero/recibo/${i.id}`, { headers: H() }).then(r => r.blob()).then(b => { const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download=`recibo_${i.numero_recibo||i.id.substring(0,8)}.pdf`; a.click(); URL.revokeObjectURL(u) })}
+                          className="text-xs text-purple-600 hover:text-purple-800 cursor-pointer">PDF</button>
                         <button onClick={() => setEditandoIngreso(i)} className="text-xs text-blue-600 hover:text-blue-800">Editar</button>
                         <button onClick={() => eliminarIngreso(i.id)} className="text-xs text-red-400 hover:text-red-600">Eliminar</button>
                       </div>
@@ -734,6 +784,7 @@ function TabMovimientos() {
           )}
       </div>}
     </div>
+    {modalRecibo && <ModalReciboOpciones ingreso={modalRecibo} onClose={() => setModalRecibo(null)} />}
   )
 }
 
