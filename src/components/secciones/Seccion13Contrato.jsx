@@ -3,27 +3,50 @@ import BotonAnterior from '../ui/BotonAnterior'
 import { sha256 } from '../../utils/hash'
 
 const TEXTO_CONTRATO = `CONTRATO DE VOLUNTARIADO
-DONUM CHRISTI COMUNIDAD APOSTÓLICA SERVIDORES DEL SERVIDOR HIJOS DI PADRE PÍO
+DONUM CHRISTI COMUNIDAD APOSTÓLICA
+SERVIDORES DEL SERVIDOR — HIJOS DI PADRE PÍO
 
-Entre los suscritos: De una parte, la asociación DONUM CHRISTI COMUNIDAD APOSTÓLICA SERVIDORES DEL SERVIDOR HIJOS DI PADRE PÍO, sin ánimo de lucro, con domicilio principal en Bogotá D.C., Colombia, NIT 900.049.867-5, representada legalmente por JOSÉ LEONARDO ESPITIA TOLEDO, C.C. No. 1.098.699.844 de Bucaramanga, que en adelante se denominará SERVIDORES DEL SERVIDOR; y de la otra parte, {NOMBRE}, mayor de edad, identificado(a) con {TIPO_ID} número {NUMERO_ID}, con domicilio en {CIUDAD}, {PAIS}, que en adelante se denominará EL/LA VOLUNTARIO(A). El presente contrato se suscribe en el marco de la Ley 720 de 2001 (Ley del Voluntariado de Colombia) y su decreto reglamentario 2019 de 2006.
+Entre los suscritos: De una parte, la asociación DONUM CHRISTI COMUNIDAD APOSTÓLICA SERVIDORES DEL SERVIDOR HIJOS DI PADRE PÍO, sin ánimo de lucro, con domicilio principal en Bogotá D.C., Colombia, NIT 900.049.867-5, representada legalmente por JOSÉ LEONARDO ESPITIA TOLEDO, C.C. No. 1.098.699.844 de Bucaramanga, que en adelante se denominará SERVIDORES DEL SERVIDOR; y de la otra parte, {NOMBRE}, mayor de edad, identificado(a) con {TIPO_ID} número {NUMERO_ID}, con domicilio en {CIUDAD}, {PAIS}, que en adelante se denominará EL/LA VOLUNTARIO(A).
+El presente contrato se suscribe en el marco de la Ley 720 de 2001 (Ley del Voluntariado de Colombia) y su Decreto Reglamentario 2019 de 2006. Para voluntarios residentes fuera de Colombia, las normas del país de residencia aplicarán de manera complementaria, sin desplazar el régimen colombiano como marco principal de esta relación.
 
-PRIMERO — NATURALEZA DEL VÍNCULO: El presente contrato establece un vínculo de voluntariado de naturaleza altruista, solidaria y gratuita. La vinculación de EL/LA VOLUNTARIO(A) a SERVIDORES DEL SERVIDOR no genera relación laboral, contractual remunerada ni obligación económica de ningún tipo entre las partes.
+PRIMERO — NATURALEZA DEL VÍNCULO
+El presente contrato establece un vínculo de voluntariado de naturaleza solidaria y gratuita. La vinculación de EL/LA VOLUNTARIO(A) a SERVIDORES DEL SERVIDOR no genera relación laboral, contractual remunerada ni obligación económica de ningún tipo entre las partes. Las partes declaran expresamente que no concurren los elementos constitutivos de una relación laboral, a saber: (i) no existe subordinación continuada ni dependencia jerárquica en la ejecución de las actividades; (ii) no existe remuneración ni contraprestación económica; (iii) la prestación del servicio es libre, espontánea y altruista. Esta declaración tiene plena validez en los términos del artículo 3.° de la Ley 720 de 2001.
 
-SEGUNDO — OBJETO: EL/LA VOLUNTARIO(A) se compromete a prestar sus servicios de manera libre, voluntaria y gratuita en el desarrollo de las actividades misionales de SERVIDORES DEL SERVIDOR, que incluyen: atención a personas en situación de vulnerabilidad, servicio en comedores, patios y puntos de servicio, actividades de formación, evangelización y misiones.
+SEGUNDO — AUSENCIA DE SUBORDINACIÓN Y AUTONOMÍA
+EL/LA VOLUNTARIO(A) ejerce sus actividades con plena autonomía en cuanto a la forma, el modo y el tiempo de ejecución. No existe horario fijo ni obligatorio, ni vínculo de dependencia permanente frente a SERVIDORES DEL SERVIDOR. Los lineamientos generales impartidos por la Asociación tienen carácter orientador y misional, no de órdenes laborales de ejecución. EL/LA VOLUNTARIO(A) podrá suspender temporalmente o retirarse definitivamente de sus actividades en cualquier momento, con la simple comunicación a la Asociación, sin que ello genere consecuencia alguna de carácter laboral o patrimonial.
 
-TERCERO — GRATUIDAD Y RENUNCIA A RETRIBUCIÓN: EL/LA VOLUNTARIO(A) declara expresamente que todos los servicios prestados son completamente gratuitos, sin esperar retribución económica, compensación, indemnización ni contraprestación alguna.
+TERCERO — OBJETO
+EL/LA VOLUNTARIO(A) se compromete a prestar sus servicios de manera libre, voluntaria y gratuita en el desarrollo de las actividades misionales de SERVIDORES DEL SERVIDOR, que incluyen: atención a personas en situación de vulnerabilidad, servicio en comedores, patios y puntos de servicio en calle, actividades de formación, evangelización y misiones, así como cualquier otra actividad afín al objeto social de la Asociación. Para voluntarios residentes en el exterior, el objeto podrá ejecutarse en el país de residencia, conforme a los lineamientos generales de la Asociación y respetando la legislación local aplicable.
 
-CUARTO — COMPROMISOS DEL VOLUNTARIO(A): Actuar conforme a los principios, valores y reglamentos internos. Cumplir el Código de Conducta y el Manual del Buen Trato. Acatar las instrucciones de los responsables y directivos. Guardar confidencialidad sobre información sensible de beneficiarios y miembros. Representar dignamente a SERVIDORES DEL SERVIDOR.
+CUARTO — GRATUIDAD Y AUSENCIA DE RETRIBUCIÓN
+EL/LA VOLUNTARIO(A) declara expresamente que todos los servicios prestados son completamente gratuitos, sin esperar ni recibir retribución económica, compensación, indemnización, salario, honorarios ni contraprestación alguna por parte de SERVIDORES DEL SERVIDOR. Esta gratuidad es elemento esencial y constitutivo del presente contrato; su ausencia desnaturalizaría el vínculo de voluntariado.
 
-QUINTO — COMPROMISOS DE SERVIDORES DEL SERVIDOR: Proveer orientación, formación y acompañamiento necesarios. Tratar al/la voluntario(a) con respeto y dignidad. Velar por condiciones seguras en el desarrollo de las actividades.
+QUINTO — COMPROMISOS DEL/LA VOLUNTARIO(A)
+EL/LA VOLUNTARIO(A) se compromete a: (i) actuar conforme a los principios, valores y reglamentos internos de la Asociación; (ii) cumplir el Código de Conducta y el Manual del Buen Trato; (iii) orientar su servicio conforme a los lineamientos generales de SERVIDORES DEL SERVIDOR, manteniendo autonomía en la ejecución de las actividades; (iv) guardar confidencialidad sobre información sensible de beneficiarios y miembros; (v) representar dignamente a SERVIDORES DEL SERVIDOR; (vi) informar a la Asociación sobre cualquier circunstancia que le impida continuar prestando el servicio voluntario.
 
-SEXTO — DURACIÓN Y TERMINACIÓN: El contrato es de duración indefinida y podrá terminarse por decisión libre del/la voluntario(a) o por incumplimiento de compromisos. La terminación no generará derecho a indemnización ni prestación social alguna.
+SEXTO — COMPROMISOS DE SERVIDORES DEL SERVIDOR
+SERVIDORES DEL SERVIDOR se compromete a: (i) proveer orientación, formación y acompañamiento necesarios para el desarrollo de las actividades; (ii) tratar al/la voluntario(a) con respeto y dignidad en todo momento; (iii) informar al/la voluntario(a) sobre los riesgos inherentes a las actividades a desarrollar, especialmente en contextos de servicio en calle y atención a población vulnerable; (iv) gestionar, en la medida de sus posibilidades y conforme al artículo 10 de la Ley 720 de 2001, mecanismos de cobertura frente a riesgos derivados de la actividad voluntaria, o en su defecto, informar expresamente al/la voluntario(a) sobre la ausencia de dicha cobertura para que pueda tomar las precauciones que considere pertinentes.
 
-SÉPTIMO — RENUNCIA A ACCIONES LEGALES: EL/LA VOLUNTARIO(A) renuncia expresamente a cualquier acción jurídica, reclamación laboral, indemnización económica o moral contra SERVIDORES DEL SERVIDOR, dada la naturaleza voluntaria y gratuita de su vinculación.
+SÉPTIMO — RIESGOS INHERENTES A LA ACTIVIDAD
+EL/LA VOLUNTARIO(A) declara conocer y aceptar los riesgos propios e inherentes a las actividades de voluntariado en las que participa, en particular aquellas desarrolladas en espacios públicos, puntos de servicio en calle y entornos de atención a población en situación de vulnerabilidad. Esta aceptación se hace de manera informada, libre y voluntaria. SERVIDORES DEL SERVIDOR adoptará los protocolos de seguridad que estén a su alcance para minimizar dichos riesgos.
 
-OCTAVO — ACEPTACIÓN DIGITAL: El presente contrato se suscribe digitalmente. La aceptación electrónica junto con el registro de nombre completo, número de identificación, fecha, hora y dirección IP tiene plena validez probatoria equivalente a la firma manuscrita.
+OCTAVO — DECLARACIÓN DE LIBRE Y ESPONTÁNEA VOLUNTAD
+EL/LA VOLUNTARIO(A) declara que su vinculación a SERVIDORES DEL SERVIDOR es completamente libre, espontánea y sin coacción de ningún tipo; que ha leído, comprendido y aceptado el contenido íntegro del presente contrato; que conoce la naturaleza no laboral y gratuita de la relación; y que no ha sido inducido(a) a error sobre las condiciones de su participación. Esta declaración constituye elemento probatorio fundamental de la naturaleza del vínculo.
 
-NOVENO — LEY APLICABLE: El presente contrato se rige principalmente por la legislación colombiana vigente en materia de voluntariado (Ley 720 de 2001), sin perjuicio de las normas aplicables en el país de residencia del/la voluntario(a).`
+NOVENO — DURACIÓN Y TERMINACIÓN
+El presente contrato es de duración indefinida y podrá terminarse por: (i) decisión libre y unilateral del/la voluntario(a), en cualquier momento y sin necesidad de expresar causa; (ii) decisión de SERVIDORES DEL SERVIDOR ante incumplimiento grave de los compromisos pactados; (iii) mutuo acuerdo de las partes. La terminación del contrato, por cualquier causa, no generará derecho a indemnización, liquidación, prestación social ni reconocimiento económico de ningún tipo.
+
+DÉCIMO — ACEPTACIÓN DIGITAL Y CONSERVACIÓN DE REGISTROS
+El presente contrato podrá suscribirse de forma digital. La aceptación electrónica, junto con el registro de nombre completo, número de identificación, fecha, hora y dirección IP, tiene plena validez probatoria equivalente a la firma manuscrita, de conformidad con la Ley 527 de 1999 sobre comercio electrónico en Colombia y sus equivalentes en el país de residencia del/la voluntario(a). SERVIDORES DEL SERVIDOR conservará el registro completo de aceptación digital por un período mínimo de cinco (5) años contados desde la fecha de suscripción o desde la terminación del vínculo, lo que ocurra después.
+
+DÉCIMO PRIMERO — LEY APLICABLE Y JURISDICCIÓN
+El presente contrato se rige principalmente por la legislación colombiana vigente en materia de voluntariado, en particular la Ley 720 de 2001 y el Decreto 2019 de 2006. Para los voluntarios residentes fuera de Colombia, las normas del país de residencia aplicarán de manera complementaria en lo que no contraríe el marco colombiano. Cualquier controversia derivada del presente contrato se resolverá preferiblemente mediante diálogo y conciliación entre las partes.
+
+Aprobado en junta el Julio 7 de 2026
+
+JOSÉ LEONARDO ESPITIA TOLEDO
+Representante Legal — SERVIDORES DEL SERVIDOR
+C.C. 1.098.699.844 — NIT 900.049.867-5`
 
 export default function Seccion13Contrato({ datos, actualizar, onSubmit, anterior }) {
   const [errores, setErrores] = useState({})
@@ -67,7 +90,7 @@ export default function Seccion13Contrato({ datos, actualizar, onSubmit, anterio
               actualizar({
                 aceptaContrato: acepta,
                 timestampContrato: acepta ? new Date().toISOString() : null,
-                versionContrato: 'v1.0-2026',
+                versionContrato: 'v2.0-2026',
                 hashContrato: hash,
               })
             }}
