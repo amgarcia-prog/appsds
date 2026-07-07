@@ -97,7 +97,7 @@ const DATOS = {
     'Otra comunidad': ['Otra'],
   },
   'Estados Unidos': {
-    'Florida': ['Jacksonville', 'Miami', 'Otra'],
+    'Florida': ['Jacksonville', 'Miami', 'Orlando', 'Otra'],
     'Pennsylvania': ['Landisville', 'Otra'],
     'Texas': ['Houston', 'Otra'],
     'Utah': ['Salt Lake City', 'Otra'],
@@ -105,6 +105,7 @@ const DATOS = {
   },
   Chile: {
     'Región Metropolitana': ['Santiago', 'Otra'],
+    'Valparaíso': ['Viña del Mar', 'Otra'],
     'Otra región': ['Otra'],
   },
   'Costa Rica': {

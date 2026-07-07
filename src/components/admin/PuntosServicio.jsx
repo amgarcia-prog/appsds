@@ -10,7 +10,7 @@ const PAISES = [
 const DEPARTAMENTOS = {
   Colombia: ['Antioquia','Arauca','Atlántico','Bolívar','Boyacá','Caldas','Caquetá','Cundinamarca','Huila','Meta','Norte de Santander','Risaralda','Santander','Tolima','Valle del Cauca'],
   Ecuador: ['Pichincha'],
-  Chile: ['Región Metropolitana'],
+  Chile: ['Región Metropolitana', 'Valparaíso'],
   España: ['Aragón','Comunidad de Madrid','Galicia'],
   'Estados Unidos': ['Florida','New Jersey','Texas','Utah'],
   México: ['Ciudad de México','Nuevo León'],
