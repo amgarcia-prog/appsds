@@ -630,6 +630,7 @@ function TabMovimientos() {
   const tipoLabel = { aporte_consagrado: 'Aporte consagrado', donacion_servicio: 'Donación', costo_financiero: 'Costo financiero', banco_a_caja_menor: 'De banco a caja menor', caja_menor_a_efectivo: 'De caja menor a efectivo' }
 
   return (
+    <>
     <div>
       {(modalIngreso || editandoIngreso) && (
         <ModalIngreso editando={editandoIngreso} onClose={() => { setModalIngreso(false); setEditandoIngreso(null) }} onGuardado={() => { setModalIngreso(false); setEditandoIngreso(null); cargar() }} />
@@ -785,6 +786,7 @@ function TabMovimientos() {
       </div>}
     </div>
     {modalRecibo && <ModalReciboOpciones ingreso={modalRecibo} onClose={() => setModalRecibo(null)} />}
+    </>
   )
 }
 
