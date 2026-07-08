@@ -710,14 +710,19 @@ function TabMovimientos() {
       {/* Ingresos */}
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="font-semibold text-gray-700 text-sm">Ingresos</h4>
+          <div className="flex items-center gap-2">
+            <h4 className="font-semibold text-gray-700 text-sm">Ingresos</h4>
+            {cuentaTab === 'banco' && ingFiltrados.length > 0 && (
+              <span className="text-xs text-gray-400">{ingFiltrados.filter(i => i.revisado).length}/{ingFiltrados.length} revisados</span>
+            )}
+          </div>
           <button onClick={() => setModalIngreso(true)} className="text-xs bg-green-600 text-white px-2.5 py-1 rounded-lg hover:bg-green-700">+ Agregar</button>
         </div>
         {cargando ? <p className="text-xs text-gray-400 py-2">Cargando...</p> :
           ingFiltrados.length === 0 ? <p className="text-xs text-gray-400 py-2">Sin ingresos este mes</p> : (
             <div className="space-y-2">
               {ingFiltrados.map(i => (
-                <div key={i.id} className="bg-white border border-gray-200 rounded-lg p-3">
+                <div key={i.id} className={`border rounded-lg p-3 ${cuentaTab === 'banco' && i.revisado ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -733,7 +738,17 @@ function TabMovimientos() {
                     </div>
                     <div className="ml-2 text-right flex-shrink-0">
                       <p className="text-sm font-bold text-green-700">{fmt(i.valor)}</p>
-                      <div className="flex gap-2 justify-end mt-1">
+                      <div className="flex gap-2 justify-end mt-1 items-center">
+                        {cuentaTab === 'banco' && (
+                          <label className="flex items-center gap-1 cursor-pointer" title={i.revisado ? 'Revisado contra extracto' : 'Marcar como revisado'}>
+                            <input type="checkbox" checked={!!i.revisado} onChange={async e => {
+                              const revisado = e.target.checked
+                              await fetch(`${API_URL}/api/financiero/ingresos/${i.id}/revisado`, { method: 'PATCH', headers: H(), body: JSON.stringify({ revisado }) })
+                              setIngresos(prev => prev.map(x => x.id === i.id ? { ...x, revisado } : x))
+                            }} className="w-3.5 h-3.5 accent-green-600" />
+                            <span className="text-xs text-gray-400">✓</span>
+                          </label>
+                        )}
                         {i.comprobante_url && <a href={i.comprobante_url} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline">Ver</a>}
                         <button onClick={() => cuentaTab === 'banco' ? setModalRecibo(i) : fetch(`${API_URL}/api/financiero/recibo/${i.id}`, { headers: H() }).then(r => r.blob()).then(b => { const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download=`recibo_${i.numero_recibo||i.id.substring(0,8)}.pdf`; a.click(); URL.revokeObjectURL(u) })}
                           className="text-xs text-purple-600 hover:text-purple-800 cursor-pointer">PDF</button>
@@ -751,14 +766,19 @@ function TabMovimientos() {
       {/* Egresos — no aplica para especie */}
       {!esEspecie && <div>
         <div className="flex items-center justify-between mb-2">
-          <h4 className="font-semibold text-gray-700 text-sm">Egresos</h4>
+          <div className="flex items-center gap-2">
+            <h4 className="font-semibold text-gray-700 text-sm">Egresos</h4>
+            {cuentaTab === 'banco' && egrFiltrados.length > 0 && (
+              <span className="text-xs text-gray-400">{egrFiltrados.filter(e => e.revisado).length}/{egrFiltrados.length} revisados</span>
+            )}
+          </div>
           <button onClick={() => setModalEgreso(true)} className="text-xs bg-red-600 text-white px-2.5 py-1 rounded-lg hover:bg-red-700">+ Agregar</button>
         </div>
         {cargando ? <p className="text-xs text-gray-400 py-2">Cargando...</p> :
           egrFiltrados.length === 0 ? <p className="text-xs text-gray-400 py-2">Sin egresos este mes</p> : (
             <div className="space-y-2">
               {egrFiltrados.map(e => (
-                <div key={e.id} className="bg-white border border-gray-200 rounded-lg p-3">
+                <div key={e.id} className={`border rounded-lg p-3 ${cuentaTab === 'banco' && e.revisado ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -772,7 +792,17 @@ function TabMovimientos() {
                     </div>
                     <div className="ml-2 text-right flex-shrink-0">
                       <p className="text-sm font-bold text-red-700">{fmt(e.valor)}</p>
-                      <div className="flex gap-2 justify-end mt-1">
+                      <div className="flex gap-2 justify-end mt-1 items-center">
+                        {cuentaTab === 'banco' && (
+                          <label className="flex items-center gap-1 cursor-pointer" title={e.revisado ? 'Revisado contra extracto' : 'Marcar como revisado'}>
+                            <input type="checkbox" checked={!!e.revisado} onChange={async ev => {
+                              const revisado = ev.target.checked
+                              await fetch(`${API_URL}/api/financiero/egresos/${e.id}/revisado`, { method: 'PATCH', headers: H(), body: JSON.stringify({ revisado }) })
+                              setEgresos(prev => prev.map(x => x.id === e.id ? { ...x, revisado } : x))
+                            }} className="w-3.5 h-3.5 accent-green-600" />
+                            <span className="text-xs text-gray-400">✓</span>
+                          </label>
+                        )}
                         {e.documento_url && <a href={e.documento_url} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline">Ver</a>}
                         <button onClick={() => setEditandoEgreso(e)} className="text-xs text-blue-600 hover:text-blue-800">Editar</button>
                         <button onClick={() => eliminarEgreso(e.id)} className="text-xs text-red-400 hover:text-red-600">Eliminar</button>
