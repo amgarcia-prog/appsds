@@ -1003,6 +1003,102 @@ function ConsultaMovimientoBanco() {
   )
 }
 
+function ConsultaBusquedaConcepto() {
+  const hoy = new Date().toISOString().slice(0, 10)
+  const primerDiaMes = `${anioActual}-${String(mesActual).padStart(2,'0')}-01`
+  const [desde, setDesde] = useState(primerDiaMes)
+  const [hasta, setHasta] = useState(hoy)
+  const [palabra, setPalabra] = useState('')
+  const [resultados, setResultados] = useState([])
+  const [cargando, setCargando] = useState(false)
+  const [consultado, setConsultado] = useState(false)
+
+  const consultar = async () => {
+    if (!palabra.trim() || !desde || !hasta) return
+    setCargando(true)
+    setConsultado(true)
+    const res = await fetch(`${API_URL}/api/financiero/consulta/busqueda-concepto?desde=${desde}&hasta=${hasta}&q=${encodeURIComponent(palabra.trim())}`, { headers: H() })
+      .then(r => r.json()).catch(() => [])
+    setResultados(Array.isArray(res) ? res : [])
+    setCargando(false)
+  }
+
+  const totalIngresos = resultados.filter(r => r._tipo === 'ingreso').reduce((s, r) => s + Number(r.valor), 0)
+  const totalEgresos = resultados.filter(r => r._tipo === 'egreso').reduce((s, r) => s + Number(r.valor), 0)
+
+  return (
+    <div>
+      <div className="flex gap-2 mb-3 items-end">
+        <div className="flex-1">
+          <label className="block text-xs text-gray-500 mb-0.5">Desde</label>
+          <input type="date" value={desde} onChange={e => setDesde(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <div className="flex-1">
+          <label className="block text-xs text-gray-500 mb-0.5">Hasta</label>
+          <input type="date" value={hasta} onChange={e => setHasta(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+      </div>
+      <div className="flex gap-2 mb-4 items-end">
+        <div className="flex-1">
+          <label className="block text-xs text-gray-500 mb-0.5">Buscar en concepto</label>
+          <input type="text" value={palabra} onChange={e => setPalabra(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && consultar()}
+            placeholder="ej: arriendo, seguro, nómina..."
+            className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <button onClick={consultar} disabled={cargando || !palabra.trim()}
+          className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50">
+          {cargando ? '...' : 'Buscar'}
+        </button>
+      </div>
+
+      {!consultado ? null : cargando ? (
+        <p className="text-sm text-gray-400 text-center py-8">Buscando...</p>
+      ) : resultados.length === 0 ? (
+        <p className="text-sm text-gray-400 text-center py-8">Sin resultados para "{palabra}"</p>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-2 text-center">
+              <p className="text-xs text-green-600 mb-0.5">Total ingresos</p>
+              <p className="text-sm font-bold text-green-700">{fmt(totalIngresos)}</p>
+            </div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-2 text-center">
+              <p className="text-xs text-red-500 mb-0.5">Total egresos</p>
+              <p className="text-sm font-bold text-red-600">{fmt(totalEgresos)}</p>
+            </div>
+          </div>
+          <p className="text-xs text-gray-400 mb-2">{resultados.length} resultado{resultados.length !== 1 ? 's' : ''}</p>
+          <div className="space-y-2">
+            {resultados.map(r => (
+              <div key={r.id + r._tipo} className="bg-white border border-gray-200 rounded-lg p-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs text-gray-400">{r.fecha}</span>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${r._tipo === 'ingreso' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                        {r._tipo === 'ingreso' ? 'Ingreso' : 'Egreso'}
+                      </span>
+                      {r.cuenta && <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{r.cuenta}</span>}
+                    </div>
+                    {r.benefactor && <p className="text-sm font-medium text-gray-800 mt-0.5">{r.benefactor}</p>}
+                    <p className="text-xs text-gray-600 mt-0.5">{r.concepto}</p>
+                  </div>
+                  <p className={`text-sm font-bold ml-2 flex-shrink-0 ${r._tipo === 'ingreso' ? 'text-green-700' : 'text-red-600'}`}>
+                    {r._tipo === 'ingreso' ? '+' : '-'}{fmt(Number(r.valor))}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function TabConsultas() {
   const [subtab, setSubtab] = useState('aportes')
   const [providentes, setProvidentes] = useState([])
@@ -1055,15 +1151,15 @@ function TabConsultas() {
   return (
     <div>
       <div className="flex gap-1 mb-5 bg-gray-100 rounded-lg p-1">
-        {[{ key: 'aportes', label: 'Aportes consagrados' }, { key: 'banco', label: 'Movimiento banco' }].map(s => (
+        {[{ key: 'aportes', label: 'Aportes consagrados' }, { key: 'banco', label: 'Movimiento banco' }, { key: 'concepto', label: 'Buscar concepto' }].map(s => (
           <button key={s.key} onClick={() => setSubtab(s.key)}
-            className={`flex-1 text-sm py-1.5 rounded-md font-medium transition-colors ${subtab === s.key ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+            className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${subtab === s.key ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
             {s.label}
           </button>
         ))}
       </div>
 
-      {subtab === 'banco' ? <ConsultaMovimientoBanco /> : <>
+      {subtab === 'banco' ? <ConsultaMovimientoBanco /> : subtab === 'concepto' ? <ConsultaBusquedaConcepto /> : <>
 
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-bold text-blue-800 text-base">Aportes consagrados {anio}</h3>
