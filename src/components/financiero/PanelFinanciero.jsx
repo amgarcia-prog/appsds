@@ -320,12 +320,12 @@ function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco' }
           </div>
         )}
 
-        {cuentaInicial === 'especie' && (
-          <div className="mb-3">
-            <p className="text-xs text-gray-500 mb-1">Forma de donación</p>
-            <span className="text-sm text-purple-700 font-medium">Especie</span>
-          </div>
-        )}
+        <div className="mb-3">
+          <p className="text-xs text-gray-500 mb-1">Forma de donación</p>
+          <span className={`text-sm font-medium ${cuentaInicial === 'especie' ? 'text-purple-700' : 'text-green-700'}`}>
+            {cuentaInicial === 'especie' ? 'Especie' : 'Dinero'}
+          </span>
+        </div>
 
         {form.forma_donacion === 'dinero' && (
           <div className="mb-3">
