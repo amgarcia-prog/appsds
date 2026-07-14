@@ -320,21 +320,12 @@ function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco' }
           </div>
         )}
 
-        <div className="mb-3">
-          <label className="block text-xs text-gray-500 mb-1">Forma de donación</label>
-          <div className="flex gap-4">
-            {cuentaInicial !== 'especie' && (
-              <label className="flex items-center gap-1.5 text-sm cursor-pointer">
-                <input type="radio" name="forma_donacion" value="dinero" checked={form.forma_donacion === 'dinero'} onChange={e => setForm(p => ({ ...p, forma_donacion: e.target.value, cuenta: p.cuenta === 'especie' ? 'banco' : p.cuenta }))} />
-                Dinero
-              </label>
-            )}
-            <label className="flex items-center gap-1.5 text-sm cursor-pointer">
-              <input type="radio" name="forma_donacion" value="especie" checked={form.forma_donacion === 'especie'} onChange={e => setForm(p => ({ ...p, forma_donacion: e.target.value, cuenta: 'especie' }))} />
-              Especie
-            </label>
+        {cuentaInicial === 'especie' && (
+          <div className="mb-3">
+            <p className="text-xs text-gray-500 mb-1">Forma de donación</p>
+            <span className="text-sm text-purple-700 font-medium">Especie</span>
           </div>
-        </div>
+        )}
 
         {form.forma_donacion === 'dinero' && (
           <div className="mb-3">
