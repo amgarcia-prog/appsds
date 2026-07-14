@@ -232,8 +232,9 @@ function TabProvidentes() {
 }
 
 // ── Modal de ingreso ─────────────────────────────────────────────────────────
-function ModalIngreso({ onClose, onGuardado, editando }) {
-  const [form, setForm] = useState(editando || { fecha: hoy(), tipo: 'donacion_servicio', concepto: '', valor: '', providente_id: '', providente_otro: '', punto_servicio_id: '', punto_servicio_otro: '', mes_aporte: '', comprobante_url: '', numero_recibo: '', forma_donacion: 'dinero', cuenta: 'banco' })
+function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco' }) {
+  const cuentaInicial = editando ? (editando.cuenta || 'banco') : cuentaDefault
+  const [form, setForm] = useState(editando || { fecha: hoy(), tipo: 'donacion_servicio', concepto: '', valor: '', providente_id: '', providente_otro: '', punto_servicio_id: '', punto_servicio_otro: '', mes_aporte: '', comprobante_url: '', numero_recibo: '', forma_donacion: cuentaInicial === 'especie' ? 'especie' : 'dinero', cuenta: cuentaInicial })
   const [providentes, setProvidentes] = useState([])
   const [puntos, setPuntos] = useState([])
   const [guardando, setGuardando] = useState(false)
@@ -322,10 +323,12 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
         <div className="mb-3">
           <label className="block text-xs text-gray-500 mb-1">Forma de donación</label>
           <div className="flex gap-4">
-            <label className="flex items-center gap-1.5 text-sm cursor-pointer">
-              <input type="radio" name="forma_donacion" value="dinero" checked={form.forma_donacion === 'dinero'} onChange={e => setForm(p => ({ ...p, forma_donacion: e.target.value, cuenta: p.cuenta === 'especie' ? 'banco' : p.cuenta }))} />
-              Dinero
-            </label>
+            {cuentaInicial !== 'especie' && (
+              <label className="flex items-center gap-1.5 text-sm cursor-pointer">
+                <input type="radio" name="forma_donacion" value="dinero" checked={form.forma_donacion === 'dinero'} onChange={e => setForm(p => ({ ...p, forma_donacion: e.target.value, cuenta: p.cuenta === 'especie' ? 'banco' : p.cuenta }))} />
+                Dinero
+              </label>
+            )}
             <label className="flex items-center gap-1.5 text-sm cursor-pointer">
               <input type="radio" name="forma_donacion" value="especie" checked={form.forma_donacion === 'especie'} onChange={e => setForm(p => ({ ...p, forma_donacion: e.target.value, cuenta: 'especie' }))} />
               Especie
@@ -397,8 +400,8 @@ function ModalIngreso({ onClose, onGuardado, editando }) {
 }
 
 // ── Modal de egreso ──────────────────────────────────────────────────────────
-function ModalEgreso({ onClose, onGuardado, editando }) {
-  const [form, setForm] = useState(editando || { fecha: hoy(), punto_servicio_id: '', punto_servicio_otro: '', concepto: '', valor: '', documento_url: '', es_costo_financiero: false, cuenta: 'banco' })
+function ModalEgreso({ onClose, onGuardado, editando, cuentaDefault = 'banco' }) {
+  const [form, setForm] = useState(editando || { fecha: hoy(), punto_servicio_id: '', punto_servicio_otro: '', concepto: '', valor: '', documento_url: '', es_costo_financiero: false, cuenta: editando ? (editando.cuenta || 'banco') : cuentaDefault })
   const [puntos, setPuntos] = useState([])
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState('')
@@ -633,10 +636,10 @@ function TabMovimientos() {
     <>
     <div>
       {(modalIngreso || editandoIngreso) && (
-        <ModalIngreso editando={editandoIngreso} onClose={() => { setModalIngreso(false); setEditandoIngreso(null) }} onGuardado={() => { setModalIngreso(false); setEditandoIngreso(null); cargar() }} />
+        <ModalIngreso editando={editandoIngreso} cuentaDefault={cuentaTab} onClose={() => { setModalIngreso(false); setEditandoIngreso(null) }} onGuardado={() => { setModalIngreso(false); setEditandoIngreso(null); cargar() }} />
       )}
       {(modalEgreso || editandoEgreso) && (
-        <ModalEgreso editando={editandoEgreso} onClose={() => { setModalEgreso(false); setEditandoEgreso(null) }} onGuardado={() => { setModalEgreso(false); setEditandoEgreso(null); cargar() }} />
+        <ModalEgreso editando={editandoEgreso} cuentaDefault={cuentaTab} onClose={() => { setModalEgreso(false); setEditandoEgreso(null) }} onGuardado={() => { setModalEgreso(false); setEditandoEgreso(null); cargar() }} />
       )}
 
       {/* Filtro mes/año */}
