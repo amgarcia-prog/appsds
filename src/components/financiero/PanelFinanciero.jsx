@@ -400,7 +400,7 @@ function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco' }
 // ── Modal de egreso ──────────────────────────────────────────────────────────
 function ModalEgreso({ onClose, onGuardado, editando, cuentaDefault = 'banco' }) {
   const cuentaInicial = editando ? (editando.cuenta || 'banco') : cuentaDefault
-  const tipoDefaultEgreso = { banco: 'egreso_servicio', caja_menor: 'caja_menor_a_efectivo', consumo_caja_menor: 'egreso_servicio' }
+  const tipoDefaultEgreso = { banco: 'egreso_servicio', caja_menor: 'caja_menor_a_efectivo', consumo_caja_menor: 'egreso_servicio', especie: 'egreso_servicio' }
   const [form, setForm] = useState(editando || { fecha: hoy(), tipo: tipoDefaultEgreso[cuentaInicial] || 'egreso_servicio', punto_servicio_id: '', punto_servicio_otro: '', concepto: '', valor: '', documento_url: '', es_costo_financiero: false, cuenta: cuentaInicial })
   const [puntos, setPuntos] = useState([])
   const [guardando, setGuardando] = useState(false)
@@ -445,10 +445,14 @@ function ModalEgreso({ onClose, onGuardado, editando, cuentaDefault = 'banco' })
 
         <div className="mb-3">
           <label className="block text-xs text-gray-500 mb-0.5">Tipo de egreso</label>
-          {cuentaInicial === 'caja_menor' ? (
-            <p className="text-sm font-medium text-blue-700">De caja menor a efectivo</p>
-          ) : cuentaInicial === 'consumo_caja_menor' ? (
+          {cuentaInicial === 'consumo_caja_menor' ? (
             <p className="text-sm font-medium text-blue-700">Egreso para servicio</p>
+          ) : cuentaInicial === 'caja_menor' ? (
+            <select value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value, punto_servicio_id: '' }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="caja_menor_a_efectivo">De caja menor a efectivo</option>
+              <option value="costo_financiero">Costo financiero</option>
+            </select>
           ) : (
             <select value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value, punto_servicio_id: '' }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
