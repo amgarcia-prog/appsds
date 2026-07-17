@@ -614,6 +614,7 @@ function TabMovimientos() {
   const [totalesHistoricos, setTotalesHistoricos] = useState({ totalIngresos: 0, totalEgresos: 0 })
   const [editandoSaldo, setEditandoSaldo] = useState(false)
   const [saldoInput, setSaldoInput] = useState('')
+  const [saldoExtracto, setSaldoExtracto] = useState('')
 
   const cargarSaldo = async (cuenta, m, a) => {
     if (cuenta === 'especie') return
@@ -669,7 +670,7 @@ function TabMovimientos() {
       {/* Sub-pestañas de cuenta */}
       <div className="flex gap-1 mb-4 bg-gray-100 rounded-lg p-1">
         {CUENTAS.map(c => (
-          <button key={c.key} onClick={() => setCuentaTab(c.key)}
+          <button key={c.key} onClick={() => { setCuentaTab(c.key); setSaldoExtracto('') }}
             className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${cuentaTab === c.key ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
             {c.label}
           </button>
@@ -717,6 +718,33 @@ function TabMovimientos() {
                 <span className="font-bold text-gray-700">Saldo mes actual</span>
                 <span className={`text-base font-bold ${(saldoReal + saldo) >= 0 ? 'text-blue-700' : 'text-red-700'}`}>{fmt(saldoReal + saldo)}</span>
               </div>
+              {!esEspecie && (
+                <div className="border-t border-dashed border-gray-200 pt-2 mt-1 space-y-1">
+                  <div className="flex justify-between items-center text-sm">
+                    <label className="text-gray-500">Saldo extracto</label>
+                    <input
+                      type="number"
+                      value={saldoExtracto}
+                      onChange={e => setSaldoExtracto(e.target.value)}
+                      placeholder="Ingresa valor"
+                      className="w-40 border border-gray-300 rounded px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                  </div>
+                  {saldoExtracto !== '' && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Diferencia</span>
+                      {(() => {
+                        const diff = (saldoReal + saldo) - Number(saldoExtracto)
+                        return (
+                          <span className={`font-semibold ${Math.abs(diff) < 1 ? 'text-green-600' : 'text-red-600'}`}>
+                            {Math.abs(diff) < 1 ? '✓ Cuadra' : fmt(diff)}
+                          </span>
+                        )
+                      })()}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
