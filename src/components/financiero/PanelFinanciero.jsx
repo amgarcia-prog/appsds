@@ -234,7 +234,8 @@ function TabProvidentes() {
 // ── Modal de ingreso ─────────────────────────────────────────────────────────
 function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco' }) {
   const cuentaInicial = editando ? (editando.cuenta || 'banco') : cuentaDefault
-  const [form, setForm] = useState(editando || { fecha: hoy(), tipo: 'donacion_servicio', concepto: '', valor: '', providente_id: '', providente_otro: '', punto_servicio_id: '', punto_servicio_otro: '', mes_aporte: '', comprobante_url: '', numero_recibo: '', forma_donacion: cuentaInicial === 'especie' ? 'especie' : 'dinero', cuenta: cuentaInicial })
+  const tipoDefaultPorCuenta = { banco: 'aporte_consagrado', caja_menor: 'banco_a_caja_menor', consumo_caja_menor: 'caja_menor_a_efectivo', especie: 'donacion_servicio' }
+  const [form, setForm] = useState(editando || { fecha: hoy(), tipo: tipoDefaultPorCuenta[cuentaInicial] || 'aporte_consagrado', concepto: '', valor: '', providente_id: '', providente_otro: '', punto_servicio_id: '', punto_servicio_otro: '', mes_aporte: '', comprobante_url: '', numero_recibo: '', forma_donacion: cuentaInicial === 'especie' ? 'especie' : 'dinero', cuenta: cuentaInicial })
   const [providentes, setProvidentes] = useState([])
   const [puntos, setPuntos] = useState([])
   const [guardando, setGuardando] = useState(false)
@@ -282,14 +283,20 @@ function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco' }
 
         <div className="mb-3">
           <label className="block text-xs text-gray-500 mb-0.5">Tipo *</label>
-          <select value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value, punto_servicio_id: '', punto_servicio_otro: '', mes_aporte: '' }))}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="aporte_consagrado">Aporte consagrado</option>
-            <option value="donacion_servicio">Donación para servicio</option>
-            <option value="costo_financiero">Costo financiero</option>
-            <option value="banco_a_caja_menor">De banco a caja menor</option>
-            <option value="caja_menor_a_efectivo">De caja menor a efectivo</option>
-          </select>
+          {cuentaInicial === 'caja_menor' ? (
+            <p className="text-sm font-medium text-blue-700">De banco a caja menor</p>
+          ) : cuentaInicial === 'consumo_caja_menor' ? (
+            <p className="text-sm font-medium text-blue-700">De caja menor a efectivo</p>
+          ) : (
+            <select value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value, punto_servicio_id: '', punto_servicio_otro: '', mes_aporte: '' }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              {cuentaInicial === 'banco' && <>
+                <option value="aporte_consagrado">Aporte consagrado</option>
+                <option value="donacion_servicio">Donación para servicio</option>
+              </>}
+              {cuentaInicial === 'especie' && <option value="donacion_servicio">Donación para servicio</option>}
+            </select>
+          )}
         </div>
 
         {form.tipo === 'aporte_consagrado' && (
@@ -392,7 +399,9 @@ function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco' }
 
 // ── Modal de egreso ──────────────────────────────────────────────────────────
 function ModalEgreso({ onClose, onGuardado, editando, cuentaDefault = 'banco' }) {
-  const [form, setForm] = useState(editando || { fecha: hoy(), punto_servicio_id: '', punto_servicio_otro: '', concepto: '', valor: '', documento_url: '', es_costo_financiero: false, cuenta: editando ? (editando.cuenta || 'banco') : cuentaDefault })
+  const cuentaInicial = editando ? (editando.cuenta || 'banco') : cuentaDefault
+  const tipoDefaultEgreso = { banco: 'egreso_servicio', caja_menor: 'caja_menor_a_efectivo', consumo_caja_menor: 'egreso_servicio' }
+  const [form, setForm] = useState(editando || { fecha: hoy(), tipo: tipoDefaultEgreso[cuentaInicial] || 'egreso_servicio', punto_servicio_id: '', punto_servicio_otro: '', concepto: '', valor: '', documento_url: '', es_costo_financiero: false, cuenta: cuentaInicial })
   const [puntos, setPuntos] = useState([])
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState('')
@@ -435,14 +444,22 @@ function ModalEgreso({ onClose, onGuardado, editando, cuentaDefault = 'banco' })
         </div>
 
         <div className="mb-3">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={form.es_costo_financiero} onChange={e => setForm(p => ({ ...p, es_costo_financiero: e.target.checked, punto_servicio_id: '' }))}
-              className="w-4 h-4 text-blue-600" />
-            <span className="text-sm text-gray-700">Es costo financiero</span>
-          </label>
+          <label className="block text-xs text-gray-500 mb-0.5">Tipo de egreso</label>
+          {cuentaInicial === 'caja_menor' ? (
+            <p className="text-sm font-medium text-blue-700">De caja menor a efectivo</p>
+          ) : cuentaInicial === 'consumo_caja_menor' ? (
+            <p className="text-sm font-medium text-blue-700">Egreso para servicio</p>
+          ) : (
+            <select value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value, punto_servicio_id: '' }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="egreso_servicio">Egreso para servicio</option>
+              <option value="costo_financiero">Costo financiero</option>
+              <option value="banco_a_caja_menor">De banco a caja menor</option>
+            </select>
+          )}
         </div>
 
-        {!form.es_costo_financiero && (
+        {form.tipo === 'egreso_servicio' && (
           <div className="mb-3">
             <label className="block text-xs text-gray-500 mb-0.5">Servicio</label>
             <select value={form.punto_servicio_id} onChange={e => setForm(p => ({ ...p, punto_servicio_id: e.target.value }))}
@@ -621,7 +638,7 @@ function TabMovimientos() {
   const saldoReal = saldoInicial + totalesHistoricos.totalIngresos - totalesHistoricos.totalEgresos
   const esEspecie = cuentaTab === 'especie'
 
-  const tipoLabel = { aporte_consagrado: 'Aporte consagrado', donacion_servicio: 'Donación', costo_financiero: 'Costo financiero', banco_a_caja_menor: 'De banco a caja menor', caja_menor_a_efectivo: 'De caja menor a efectivo' }
+  const tipoLabel = { aporte_consagrado: 'Aporte consagrado', donacion_servicio: 'Donación', egreso_servicio: 'Egreso para servicio', costo_financiero: 'Costo financiero', banco_a_caja_menor: 'De banco a caja menor', caja_menor_a_efectivo: 'De caja menor a efectivo' }
 
   return (
     <>
@@ -776,8 +793,12 @@ function TabMovimientos() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        {e.es_costo_financiero
+                        {e.tipo === 'costo_financiero'
                           ? <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Costo financiero</span>
+                          : e.tipo === 'banco_a_caja_menor'
+                          ? <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Banco → Caja menor</span>
+                          : e.tipo === 'caja_menor_a_efectivo'
+                          ? <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Caja menor → Efectivo</span>
                           : e.punto?.nombre && <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{e.punto.nombre}</span>
                         }
                       </div>
