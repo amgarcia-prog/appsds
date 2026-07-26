@@ -779,9 +779,9 @@ function TabMovimientos() {
                       {(i.providente?.nombre || i.providente_otro) && <p className="text-xs text-gray-400">{i.providente?.nombre || i.providente_otro}</p>}
                       <p className="text-xs text-gray-400">{i.fecha}</p>
                       <p className="text-xs text-gray-300">
-                        {i.creador?.nombre && `Creado: ${i.creador.nombre}`}
-                        {i.creador?.nombre && i.editor?.nombre && ' · '}
-                        {i.editor?.nombre && `Editado: ${i.editor.nombre}`}
+                        {i.creador?.primer_nombre && `Creado: ${i.creador.primer_nombre} ${i.creador.primer_apellido}`}
+                        {i.creador?.primer_nombre && i.editor?.primer_nombre && ' · '}
+                        {i.editor?.primer_nombre && `Editado: ${i.editor.primer_nombre} ${i.editor.primer_apellido}`}
                       </p>
                     </div>
                     <div className="ml-2 text-right flex-shrink-0">
@@ -842,9 +842,9 @@ function TabMovimientos() {
                       <p className="text-sm text-gray-800 mt-1">{e.concepto}</p>
                       <p className="text-xs text-gray-400">{e.fecha}</p>
                       <p className="text-xs text-gray-300">
-                        {e.creador?.nombre && `Creado: ${e.creador.nombre}`}
-                        {e.creador?.nombre && e.editor?.nombre && ' · '}
-                        {e.editor?.nombre && `Editado: ${e.editor.nombre}`}
+                        {e.creador?.primer_nombre && `Creado: ${e.creador.primer_nombre} ${e.creador.primer_apellido}`}
+                        {e.creador?.primer_nombre && e.editor?.primer_nombre && ' · '}
+                        {e.editor?.primer_nombre && `Editado: ${e.editor.primer_nombre} ${e.editor.primer_apellido}`}
                       </p>
                     </div>
                     <div className="ml-2 text-right flex-shrink-0">
