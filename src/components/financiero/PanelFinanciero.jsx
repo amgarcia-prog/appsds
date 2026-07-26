@@ -778,6 +778,11 @@ function TabMovimientos() {
                       <p className="text-sm text-gray-800 mt-1">{i.concepto}</p>
                       {(i.providente?.nombre || i.providente_otro) && <p className="text-xs text-gray-400">{i.providente?.nombre || i.providente_otro}</p>}
                       <p className="text-xs text-gray-400">{i.fecha}</p>
+                      <p className="text-xs text-gray-300">
+                        {i.creador?.nombre && `Creado: ${i.creador.nombre}`}
+                        {i.creador?.nombre && i.editor?.nombre && ' · '}
+                        {i.editor?.nombre && `Editado: ${i.editor.nombre}`}
+                      </p>
                     </div>
                     <div className="ml-2 text-right flex-shrink-0">
                       <p className="text-sm font-bold text-green-700">{fmt(i.valor)}</p>
@@ -836,6 +841,11 @@ function TabMovimientos() {
                       </div>
                       <p className="text-sm text-gray-800 mt-1">{e.concepto}</p>
                       <p className="text-xs text-gray-400">{e.fecha}</p>
+                      <p className="text-xs text-gray-300">
+                        {e.creador?.nombre && `Creado: ${e.creador.nombre}`}
+                        {e.creador?.nombre && e.editor?.nombre && ' · '}
+                        {e.editor?.nombre && `Editado: ${e.editor.nombre}`}
+                      </p>
                     </div>
                     <div className="ml-2 text-right flex-shrink-0">
                       <p className="text-sm font-bold text-red-700">{fmt(e.valor)}</p>
