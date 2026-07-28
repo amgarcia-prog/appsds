@@ -70,7 +70,11 @@ export default function Evaluacion() {
     // verificar si ya evaluó
     const check = await fetch(`${API_URL}/api/evaluacion/ya-evaluo?anio=${ANIO}&evaluador_id=${data.id}`)
     const checkData = await check.json()
-    if (checkData.ya_evaluo) { setError(`Ya enviaste tu evaluación ${ANIO}.`); return }
+    if (checkData.ya_evaluo) {
+      setUsuario(data)
+      setPaso('gracias')
+      return
+    }
 
     const pRes = await fetch(`${API_URL}/api/evaluacion/pilares`)
     const pData = await pRes.json()
