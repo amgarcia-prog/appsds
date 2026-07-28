@@ -3,10 +3,16 @@ import API_URL from '../config.js'
 
 const ANIO = new Date().getFullYear()
 
-const PREGUNTAS = [
+const PREGUNTAS_AUTO = [
   { key: 'p1', texto: 'Participo de manera regular en las reuniones de la junta de pilares.' },
   { key: 'p2', texto: 'Cuando se me asigna una tarea o compromiso, lo atiendo oportunamente.' },
   { key: 'p3', texto: 'Hago seguimiento activo a las ciudades que tengo a mi cargo.' },
+]
+
+const PREGUNTAS_OTRO = [
+  { key: 'p1', texto: 'Participa de manera regular en las reuniones de la junta de pilares.' },
+  { key: 'p2', texto: 'Cuando se le asigna una tarea o compromiso, lo atiende oportunamente.' },
+  { key: 'p3', texto: 'Hace seguimiento activo a las ciudades que tiene a su cargo.' },
 ]
 
 const ESCALA = [1, 2, 3, 4, 5]
@@ -26,10 +32,10 @@ function PuntajeSelector({ valor, onChange }) {
   )
 }
 
-function FormularioEvaluacion({ pilar, esAuto, respuestas, onChange }) {
+function FormularioEvaluacion({ pilar, esAuto, preguntas, respuestas, onChange }) {
   return (
     <div className="space-y-5">
-      {PREGUNTAS.map(p => (
+      {preguntas.map(p => (
         <div key={p.key}>
           <p className="text-sm text-gray-700">{p.texto}</p>
           <PuntajeSelector valor={respuestas[p.key]} onChange={v => onChange(p.key, v)} />
@@ -179,6 +185,7 @@ export default function Evaluacion() {
         <FormularioEvaluacion
           pilar={pilarActual}
           esAuto={esAuto}
+          preguntas={esAuto ? PREGUNTAS_AUTO : PREGUNTAS_OTRO}
           respuestas={respActual}
           onChange={(key, val) => setRespActual(r => ({ ...r, [key]: val }))}
         />
@@ -223,7 +230,7 @@ export default function Evaluacion() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {PREGUNTAS.map((p, i) => (
+                  {PREGUNTAS_AUTO.map((p, i) => (
                     <tr key={p.key}>
                       <td className="py-1.5 text-gray-600 pr-4">{p.texto}</td>
                       <td className="py-1.5 text-center font-semibold text-blue-700">{prom(r[p.key])}</td>
