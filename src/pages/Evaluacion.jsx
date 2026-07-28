@@ -170,7 +170,7 @@ export default function Evaluacion() {
           <div className="bg-blue-600 h-1.5 rounded-full transition-all" style={{ width: `${((indice) / totalPasos) * 100}%` }} />
         </div>
         <h2 className="text-base font-bold text-blue-800 mb-1">
-          {esAuto ? 'Autoevaluación' : `Evaluación de ${pilarActual?.primer_nombre || pilarActual?.nombre}`}
+          {esAuto ? 'Autoevaluación' : `Evaluación de ${[pilarActual?.primer_nombre, pilarActual?.segundo_nombre, pilarActual?.primer_apellido].filter(Boolean).join(' ')}`}
         </h2>
         <p className="text-xs text-gray-500 mb-5">
           {esAuto ? 'Evalúate a ti mismo honestamente.' : `Evalúa a este hermano pilar.`}
