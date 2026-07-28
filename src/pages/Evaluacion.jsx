@@ -128,7 +128,7 @@ export default function Evaluacion() {
   const verResultados = async () => {
     const res = await fetch(`${API_URL}/api/evaluacion/resultados?anio=${ANIO}&id=${usuario.id}`)
     const data = await res.json()
-    if (!data.ok === false && Array.isArray(data)) {
+    if (Array.isArray(data)) {
       // agrupar por evaluado
       const mapa = {}
       data.forEach(e => {
