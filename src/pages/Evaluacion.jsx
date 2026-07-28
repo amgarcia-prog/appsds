@@ -17,11 +17,11 @@ function PuntajeSelector({ valor, onChange }) {
     <div className="flex gap-2 flex-wrap mt-2">
       {ESCALA.map(n => (
         <button key={n} onClick={() => onChange(n)}
-          className={`w-10 h-10 rounded-full text-sm font-semibold border transition-colors ${valor === n ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'}`}>
-          {n}
+          className={`flex flex-col items-center w-16 py-2 rounded-lg border transition-colors ${valor === n ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'}`}>
+          <span className="text-base font-bold">{n}</span>
+          <span className={`text-xs mt-0.5 leading-tight text-center ${valor === n ? 'text-blue-100' : 'text-gray-400'}`}>{ESCALA_LABEL[n]}</span>
         </button>
       ))}
-      {valor && <span className="text-sm text-gray-500 self-center ml-1">{ESCALA_LABEL[valor]}</span>}
     </div>
   )
 }
