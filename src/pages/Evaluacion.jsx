@@ -207,7 +207,7 @@ export default function Evaluacion() {
         <div className="text-5xl mb-4">✓</div>
         <h2 className="text-xl font-bold text-blue-800 mb-2">¡Gracias, {usuario.nombre.split(' ')[0]}!</h2>
         <p className="text-sm text-gray-500 mb-6">Tu evaluación {ANIO} fue enviada correctamente.</p>
-        {['Servidor General', 'Organizacional'].includes(usuario.responsabilidades_pilar) && (
+        {(() => { const r = usuario.responsabilidades_pilar || []; const arr = Array.isArray(r) ? r : [r]; return arr.some(x => ['Servidor General', 'Organizacional'].includes(x)) })() && (
           <button onClick={verResultados} className="w-full border border-blue-700 text-blue-700 rounded-lg py-2.5 text-sm font-semibold hover:bg-blue-50">
             Ver resultados
           </button>
