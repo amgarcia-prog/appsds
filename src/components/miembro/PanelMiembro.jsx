@@ -12,6 +12,7 @@ import PanelJunta from '../admin/PanelJunta'
 import PanelFinanciero from '../financiero/PanelFinanciero'
 import PuntosServicio from '../admin/PuntosServicio'
 import GestionConsejo from '../admin/GestionConsejo'
+import PanelCumpleanos from './PanelCumpleanos'
 
 const PAISES = [
   'Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica',
@@ -352,12 +353,16 @@ export default function PanelMiembro() {
                     Responsabilidades consejo
                   </button>
                 )}
-                {datos?.responsabilidades_consejo?.includes('Coordinador principal del consejo') && (
+                {datos?.responsabilidades_consejo?.includes('Coordinador principal del consejo') && (<>
                   <button onClick={() => setPanelTab('gestion_consejo')}
                     className={`text-xs px-3 py-1.5 ${panelTab === 'gestion_consejo' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
                     Gestión del consejo
                   </button>
-                )}
+                  <button onClick={() => setPanelTab('cumpleanos')}
+                    className={`text-xs px-3 py-1.5 ${panelTab === 'cumpleanos' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
+                    Cumpleaños
+                  </button>
+                </>)}
                 {datos?.responsabilidades_pilar?.includes('Organizacional') && (<>
                   <button onClick={() => setPanelTab('aprobaciones')}
                     className={`text-xs px-3 py-1.5 ${panelTab === 'aprobaciones' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
@@ -422,6 +427,7 @@ export default function PanelMiembro() {
       {panelTab === 'aprobaciones' && <PanelJunta />}
       {panelTab === 'puntos' && <PuntosServicio />}
       {panelTab === 'consejos_org' && <GestionConsejo />}
+      {panelTab === 'cumpleanos' && <PanelCumpleanos ciudad={datos?.ciudad_donde_sirve || sesion.ciudad} />}
       {panelTab === 'pilares' && (
         <div className="max-w-2xl mx-auto px-4 py-6">
           <PanelResponsabilidadesPilares />
