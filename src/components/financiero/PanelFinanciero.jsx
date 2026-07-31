@@ -614,7 +614,7 @@ function TabMovimientos() {
   const [totalesHistoricos, setTotalesHistoricos] = useState({ totalIngresos: 0, totalEgresos: 0 })
   const [editandoSaldo, setEditandoSaldo] = useState(false)
   const [saldoInput, setSaldoInput] = useState('')
-  const [saldoExtracto, setSaldoExtracto] = useState('')
+  const [saldoExtracto, setSaldoExtracto] = useState(() => localStorage.getItem(`saldo_extracto_${cuentaTab}`) || '')
 
   const cargarSaldo = async (cuenta, m, a) => {
     if (cuenta === 'especie') return
@@ -670,7 +670,7 @@ function TabMovimientos() {
       {/* Sub-pestañas de cuenta */}
       <div className="flex gap-1 mb-4 bg-gray-100 rounded-lg p-1">
         {CUENTAS.map(c => (
-          <button key={c.key} onClick={() => { setCuentaTab(c.key); setSaldoExtracto('') }}
+          <button key={c.key} onClick={() => { setCuentaTab(c.key); setSaldoExtracto(localStorage.getItem(`saldo_extracto_${c.key}`) || '') }}
             className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${cuentaTab === c.key ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
             {c.label}
           </button>
@@ -725,7 +725,7 @@ function TabMovimientos() {
                     <input
                       type="number"
                       value={saldoExtracto}
-                      onChange={e => setSaldoExtracto(e.target.value)}
+                      onChange={e => { setSaldoExtracto(e.target.value); localStorage.setItem(`saldo_extracto_${cuentaTab}`, e.target.value) }}
                       placeholder="Ingresa valor"
                       className="w-40 border border-gray-300 rounded px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-blue-400"
                     />
