@@ -133,7 +133,7 @@ export default function Evaluacion() {
       const mapa = {}
       data.forEach(e => {
         const key = e.evaluado_id
-        if (!mapa[key]) mapa[key] = { nombre: `${e.evaluado.primer_nombre} ${e.evaluado.primer_apellido}`, p1: [], p2: [], p3: [], auto: null }
+        if (!mapa[key]) mapa[key] = { nombre: [e.evaluado.primer_nombre, e.evaluado.segundo_nombre, e.evaluado.primer_apellido].filter(Boolean).join(' '), p1: [], p2: [], p3: [], auto: null }
         const entry = { p1: e.p1_reuniones, p2: e.p2_compromisos, p3: e.p3_seguimiento }
         if (e.es_autoevaluacion) mapa[key].auto = entry
         else { mapa[key].p1.push(e.p1_reuniones); mapa[key].p2.push(e.p2_compromisos); mapa[key].p3.push(e.p3_seguimiento) }
