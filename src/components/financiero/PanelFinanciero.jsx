@@ -1400,6 +1400,7 @@ function TabReportes() {
     { key: 'imagenes-banco', label: 'Imágenes banco', desc: 'Soportes fotográficos banco', formato: 'PDF' },
     { key: 'imagenes-caja-menor', label: 'Imágenes caja menor', desc: 'Soportes fotográficos caja menor', formato: 'PDF' },
     { key: 'imagenes-consumo-caja-menor', label: 'Imágenes consumo', desc: 'Soportes fotográficos consumo caja menor', formato: 'PDF' },
+    { key: 'imagenes-especie', label: 'Imágenes especie', desc: 'Soportes fotográficos donaciones en especie', formato: 'PDF' },
   ]
 
   return (
