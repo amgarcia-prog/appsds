@@ -1366,29 +1366,9 @@ function TabConsultas() {
 function TabReportes() {
   const [mes, setMes] = useState(mesActual)
   const [anio, setAnio] = useState(anioActual)
-  const [descargando, setDescargando] = useState('')
-
-  const descargar = async (tipo) => {
-    setDescargando(tipo)
-    const params = `mes=${mes}&anio=${anio}`
-    const res = await fetch(`${API_URL}/api/financiero/reporte/${tipo}?${params}`, { headers: { 'x-miembro-id': JSON.parse(localStorage.getItem('miembro_sesion') || '{}').id } })
-    if (!res.ok) { setDescargando(''); return alert('Error al generar el reporte') }
-    const ct = res.headers.get('Content-Type') || ''
-    if (ct.includes('application/json')) {
-      const json = await res.json()
-      setDescargando('')
-      return alert(json.mensaje || 'Sin datos para este período')
-    }
-    const blob = await res.blob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    const ext = tipo === 'recibos-mes' ? 'zip' : tipo.startsWith('imagenes') ? 'pdf' : 'xlsx'
-    a.download = res.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g,'') || `${tipo}.${ext}`
-    a.click()
-    URL.revokeObjectURL(url)
-    setDescargando('')
-  }
+  const [seleccionados, setSeleccionados] = useState([])
+  const [generando, setGenerando] = useState(false)
+  const [progreso, setProgreso] = useState('')
 
   const reportes = [
     { key: 'aportes-consagrados', label: 'Relación aportes consagrados', desc: 'Aportes consagrados del mes ordenados por benefactor' },
@@ -1403,9 +1383,41 @@ function TabReportes() {
     { key: 'imagenes-especie', label: 'Imágenes especie', desc: 'Soportes fotográficos donaciones en especie', formato: 'PDF' },
   ]
 
+  const todosSeleccionados = seleccionados.length === reportes.length
+  const toggleTodos = () => setSeleccionados(todosSeleccionados ? [] : reportes.map(r => r.key))
+  const toggleUno = (key) => setSeleccionados(s => s.includes(key) ? s.filter(k => k !== key) : [...s, key])
+
+  const descargarUno = async (tipo) => {
+    const params = `mes=${mes}&anio=${anio}`
+    const res = await fetch(`${API_URL}/api/financiero/reporte/${tipo}?${params}`, { headers: { 'x-miembro-id': JSON.parse(localStorage.getItem('miembro_sesion') || '{}').id } })
+    if (!res.ok) return
+    const ct = res.headers.get('Content-Type') || ''
+    if (ct.includes('application/json')) return
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const ext = tipo === 'recibos-mes' ? 'zip' : tipo.startsWith('imagenes') ? 'pdf' : 'xlsx'
+    a.download = res.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g,'') || `${tipo}.${ext}`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const generarSeleccionados = async () => {
+    if (seleccionados.length === 0) return
+    setGenerando(true)
+    for (let i = 0; i < seleccionados.length; i++) {
+      const r = reportes.find(x => x.key === seleccionados[i])
+      setProgreso(`${i + 1}/${seleccionados.length} — ${r.label}`)
+      await descargarUno(seleccionados[i])
+    }
+    setGenerando(false)
+    setProgreso('')
+  }
+
   return (
     <div>
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-5">
         <select value={mes} onChange={e => setMes(Number(e.target.value))}
           className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
           {MESES.map((m, i) => <option key={m} value={i+1}>{m}</option>)}
@@ -1416,18 +1428,29 @@ function TabReportes() {
         </select>
       </div>
 
+      <div className="flex items-center justify-between mb-3">
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input type="checkbox" checked={todosSeleccionados} onChange={toggleTodos}
+            className="w-4 h-4 accent-green-600" />
+          <span className="text-sm font-medium text-gray-700">Seleccionar todos</span>
+        </label>
+        <button onClick={generarSeleccionados} disabled={generando || seleccionados.length === 0}
+          className="bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-40">
+          {generando ? progreso : `⬇ Generar${seleccionados.length > 0 ? ` (${seleccionados.length})` : ''}`}
+        </button>
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         {reportes.map(r => (
-          <div key={r.key} className="bg-white border border-gray-200 rounded-xl p-3 flex flex-col gap-2">
+          <label key={r.key} className={`bg-white border rounded-xl p-3 flex gap-3 items-start cursor-pointer transition-colors ${seleccionados.includes(r.key) ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
+            <input type="checkbox" checked={seleccionados.includes(r.key)} onChange={() => toggleUno(r.key)}
+              className="mt-0.5 w-4 h-4 accent-green-600 flex-shrink-0" />
             <div>
               <p className="text-sm font-semibold text-gray-800">{r.label}</p>
               <p className="text-xs text-gray-400 mt-0.5">{r.desc}</p>
+              {r.formato && <span className="text-xs text-gray-400">{r.formato}</span>}
             </div>
-            <button onClick={() => descargar(r.key)} disabled={descargando === r.key}
-              className="w-full text-sm bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 text-center">
-              {descargando === r.key ? 'Generando...' : `⬇ ${r.formato || 'Excel'}`}
-            </button>
-          </div>
+          </label>
         ))}
       </div>
     </div>
