@@ -136,7 +136,7 @@ export default function Evaluacion() {
         if (!mapa[key]) mapa[key] = { nombre: [e.evaluado.primer_nombre, e.evaluado.segundo_nombre, e.evaluado.primer_apellido].filter(Boolean).join(' '), p1: [], p2: [], p3: [], auto: null }
         const entry = { p1: e.p1_reuniones, p2: e.p2_compromisos, p3: e.p3_seguimiento }
         if (e.es_autoevaluacion) mapa[key].auto = entry
-        else { mapa[key].p1.push(e.p1_reuniones); mapa[key].p2.push(e.p2_compromisos); mapa[key].p3.push(e.p3_seguimiento) }
+        mapa[key].p1.push(e.p1_reuniones); mapa[key].p2.push(e.p2_compromisos); mapa[key].p3.push(e.p3_seguimiento)
       })
       setResultados(mapa)
       setPaso('resultados')
@@ -243,7 +243,7 @@ export default function Evaluacion() {
                   ))}
                 </tbody>
               </table>
-              <p className="text-xs text-gray-400 mt-2">{r.p1.length} evaluadores</p>
+              <p className="text-xs text-gray-400 mt-2">{r.p1.length} evaluaciones{r.auto ? ' (incluye autoevaluación)' : ''}</p>
             </div>
           ))}
         </div>
