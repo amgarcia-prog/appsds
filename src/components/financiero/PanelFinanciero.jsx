@@ -753,7 +753,7 @@ function TabMovimientos() {
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500">Diferencia</span>
                       {(() => {
-                        const diff = (saldoReal + saldo) - Number(saldoExtracto)
+                        const diff = (cuentaTab === 'banco' ? saldoAjustado : (saldoReal + saldo)) - Number(saldoExtracto)
                         return (
                           <span className={`font-semibold ${Math.abs(diff) < 1 ? 'text-green-600' : 'text-red-600'}`}>
                             {Math.abs(diff) < 1 ? '✓ Cuadra' : fmt(diff)}
