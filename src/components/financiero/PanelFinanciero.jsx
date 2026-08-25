@@ -642,6 +642,9 @@ function TabMovimientos() {
   const saldo = totalIngresos - totalEgresos
   const saldoReal = saldoInicial + totalesHistoricos.totalIngresos - totalesHistoricos.totalEgresos
   const esEspecie = cuentaTab === 'especie'
+  const ingresosSinRevisar = ingFiltrados.filter(i => !i.revisado).reduce((s, i) => s + Number(i.valor), 0)
+  const egresosSinRevisar = egrFiltrados.filter(e => !e.revisado).reduce((s, e) => s + Number(e.valor), 0)
+  const saldoAjustado = (saldoReal + saldo) - ingresosSinRevisar + egresosSinRevisar
 
   const tipoLabel = { aporte_consagrado: 'Aporte consagrado', donacion_servicio: 'Donación', egreso_servicio: 'Egreso para servicio', costo_financiero: 'Costo financiero', banco_a_caja_menor: 'De banco a caja menor', caja_menor_a_efectivo: 'De caja menor a efectivo' }
 
@@ -718,6 +721,22 @@ function TabMovimientos() {
                 <span className="font-bold text-gray-700">Saldo mes actual</span>
                 <span className={`text-base font-bold ${(saldoReal + saldo) >= 0 ? 'text-blue-700' : 'text-red-700'}`}>{fmt(saldoReal + saldo)}</span>
               </div>
+              {cuentaTab === 'banco' && (
+                <>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-green-500">− Ingresos sin revisar en el extracto</span>
+                    <span className="font-semibold text-green-600">{fmt(ingresosSinRevisar)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-red-400">+ Egresos sin revisar en el extracto</span>
+                    <span className="font-semibold text-red-500">{fmt(egresosSinRevisar)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm border-t border-gray-200 pt-2 mt-1">
+                    <span className="font-bold text-gray-700">Nuevo saldo</span>
+                    <span className={`text-base font-bold ${saldoAjustado >= 0 ? 'text-blue-700' : 'text-red-700'}`}>{fmt(saldoAjustado)}</span>
+                  </div>
+                </>
+              )}
               {!esEspecie && (
                 <div className="border-t border-dashed border-gray-200 pt-2 mt-1 space-y-1">
                   <div className="flex justify-between items-center text-sm">
