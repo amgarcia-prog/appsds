@@ -232,10 +232,10 @@ function TabProvidentes() {
 }
 
 // ── Modal de ingreso ─────────────────────────────────────────────────────────
-function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco' }) {
+function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco', prellenado }) {
   const cuentaInicial = editando ? (editando.cuenta || 'banco') : cuentaDefault
   const tipoDefaultPorCuenta = { banco: 'aporte_consagrado', caja_menor: 'banco_a_caja_menor', consumo_caja_menor: 'caja_menor_a_efectivo', especie: 'donacion_servicio' }
-  const [form, setForm] = useState(editando || { fecha: hoy(), tipo: tipoDefaultPorCuenta[cuentaInicial] || 'aporte_consagrado', concepto: '', valor: '', providente_id: '', providente_otro: '', punto_servicio_id: '', punto_servicio_otro: '', mes_aporte: '', comprobante_url: '', numero_recibo: '', forma_donacion: cuentaInicial === 'especie' ? 'especie' : 'dinero', cuenta: cuentaInicial })
+  const [form, setForm] = useState(editando || { fecha: hoy(), tipo: tipoDefaultPorCuenta[cuentaInicial] || 'aporte_consagrado', concepto: '', valor: '', providente_id: '', providente_otro: '', punto_servicio_id: '', punto_servicio_otro: '', mes_aporte: '', comprobante_url: '', numero_recibo: '', forma_donacion: cuentaInicial === 'especie' ? 'especie' : 'dinero', cuenta: cuentaInicial, ...(prellenado || {}) })
   const [providentes, setProvidentes] = useState([])
   const [puntos, setPuntos] = useState([])
   const [guardando, setGuardando] = useState(false)
@@ -579,6 +579,8 @@ function TabMovimientos() {
   const [editandoEgreso, setEditandoEgreso] = useState(null)
   const [modalRecibo, setModalRecibo] = useState(null)
   const [mensaje, setMensaje] = useState('')
+  const [reportesDonacion, setReportesDonacion] = useState([])
+  const [reporteParaRegistrar, setReporteParaRegistrar] = useState(null)
 
   const msg = (m) => { setMensaje(m); setTimeout(() => setMensaje(''), 3000) }
 
@@ -594,7 +596,19 @@ function TabMovimientos() {
     setCargando(false)
   }
 
+  const cargarReportesDonacion = async () => {
+    const data = await fetch(`${API_URL}/api/financiero/reportes-donacion`, { headers: H() }).then(r => r.json()).catch(() => [])
+    setReportesDonacion(Array.isArray(data) ? data : [])
+  }
+
   useEffect(() => { cargar() }, [mes, anio])
+  useEffect(() => { cargarReportesDonacion() }, [])
+
+  const descartarReporte = async (id) => {
+    if (!confirm('¿Descartar este reporte sin registrarlo como ingreso?')) return
+    await fetch(`${API_URL}/api/financiero/reportes-donacion/${id}/atendido`, { method: 'PATCH', headers: H() })
+    cargarReportesDonacion()
+  }
 
   const eliminarIngreso = async (id) => {
     if (!confirm('¿Eliminar este ingreso?')) return
@@ -654,8 +668,48 @@ function TabMovimientos() {
       {(modalIngreso || editandoIngreso) && (
         <ModalIngreso editando={editandoIngreso} cuentaDefault={cuentaTab} onClose={() => { setModalIngreso(false); setEditandoIngreso(null) }} onGuardado={() => { setModalIngreso(false); setEditandoIngreso(null); cargar() }} />
       )}
+      {reporteParaRegistrar && (
+        <ModalIngreso
+          cuentaDefault="banco"
+          prellenado={{
+            concepto: `Donación web${reporteParaRegistrar.telefono ? ' - ' + reporteParaRegistrar.telefono : ''}`,
+            valor: reporteParaRegistrar.valor,
+            providente_otro: reporteParaRegistrar.nombre_donante,
+            tipo: 'donacion_servicio',
+          }}
+          onClose={() => setReporteParaRegistrar(null)}
+          onGuardado={async () => {
+            await fetch(`${API_URL}/api/financiero/reportes-donacion/${reporteParaRegistrar.id}/atendido`, { method: 'PATCH', headers: H() })
+            setReporteParaRegistrar(null)
+            cargarReportesDonacion()
+            cargar()
+          }}
+        />
+      )}
       {(modalEgreso || editandoEgreso) && (
         <ModalEgreso editando={editandoEgreso} cuentaDefault={cuentaTab} onClose={() => { setModalEgreso(false); setEditandoEgreso(null) }} onGuardado={() => { setModalEgreso(false); setEditandoEgreso(null); cargar() }} />
+      )}
+
+      {reportesDonacion.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+          <h4 className="font-semibold text-amber-800 text-sm mb-2">
+            {reportesDonacion.length} {reportesDonacion.length === 1 ? 'reporte de donación' : 'reportes de donación'} desde la web sin registrar
+          </h4>
+          <div className="space-y-2">
+            {reportesDonacion.map(r => (
+              <div key={r.id} className="bg-white border border-amber-200 rounded-lg p-2.5 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-800 truncate">{r.nombre_donante}</p>
+                  <p className="text-xs text-gray-400">{fmt(r.valor)}{r.telefono ? ` · ${r.telefono}` : ''}{r.comentario ? ` · ${r.comentario}` : ''}</p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <button onClick={() => setReporteParaRegistrar(r)} className="text-xs bg-blue-600 text-white px-2.5 py-1.5 rounded-lg hover:bg-blue-700">Registrar</button>
+                  <button onClick={() => descartarReporte(r.id)} className="text-xs text-gray-400 hover:text-red-500">Descartar</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Filtro mes/año */}
