@@ -242,7 +242,14 @@ function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco', 
   const [mensaje, setMensaje] = useState('')
 
   useEffect(() => {
-    fetch(`${API_URL}/api/financiero/providentes`, { headers: H() }).then(r => r.json()).then(d => setProvidentes(Array.isArray(d) ? d : []))
+    fetch(`${API_URL}/api/financiero/providentes`, { headers: H() }).then(r => r.json()).then(d => {
+      const lista = Array.isArray(d) ? d : []
+      setProvidentes(lista)
+      if (prellenado?.cedulaBuscar) {
+        const match = lista.find(p => p.numero_identificacion === prellenado.cedulaBuscar)
+        if (match) setForm(p => ({ ...p, providente_id: match.id, providente_otro: '' }))
+      }
+    })
     fetch(`${API_URL}/api/financiero/puntos-servicio`, { headers: H() }).then(r => r.json()).then(d => setPuntos(Array.isArray(d) ? d : []))
     if (!editando) {
       fetch(`${API_URL}/api/financiero/proximo-recibo`, { headers: H() }).then(r => r.json()).then(d => {
@@ -581,6 +588,7 @@ function TabMovimientos() {
   const [mensaje, setMensaje] = useState('')
   const [reportesDonacion, setReportesDonacion] = useState([])
   const [reporteParaRegistrar, setReporteParaRegistrar] = useState(null)
+  const [providentesCheck, setProvidentesCheck] = useState([])
 
   const msg = (m) => { setMensaje(m); setTimeout(() => setMensaje(''), 3000) }
 
@@ -601,13 +609,42 @@ function TabMovimientos() {
     setReportesDonacion(Array.isArray(data) ? data : [])
   }
 
+  const cargarProvidentesCheck = async () => {
+    const data = await fetch(`${API_URL}/api/financiero/providentes`, { headers: H() }).then(r => r.json()).catch(() => [])
+    setProvidentesCheck(Array.isArray(data) ? data : [])
+  }
+
   useEffect(() => { cargar() }, [mes, anio])
-  useEffect(() => { cargarReportesDonacion() }, [])
+  useEffect(() => { cargarReportesDonacion(); cargarProvidentesCheck() }, [])
 
   const descartarReporte = async (id) => {
     if (!confirm('¿Descartar este reporte sin registrarlo como ingreso?')) return
     await fetch(`${API_URL}/api/financiero/reportes-donacion/${id}/atendido`, { method: 'PATCH', headers: H() })
     cargarReportesDonacion()
+  }
+
+  const crearProvidenteDesdeReporte = async (r) => {
+    await fetch(`${API_URL}/api/financiero/providentes`, {
+      method: 'POST', headers: H(),
+      body: JSON.stringify({ numero_identificacion: r.cedula, nombre: r.nombre_donante, telefono: r.telefono, direccion: r.direccion, correo: r.correo }),
+    })
+    cargarProvidentesCheck()
+    msg('✅ Providente creado')
+  }
+
+  const actualizarProvidenteDesdeReporte = async (providente, r) => {
+    await fetch(`${API_URL}/api/financiero/providentes/${providente.id}`, {
+      method: 'PUT', headers: H(),
+      body: JSON.stringify({
+        numero_identificacion: providente.numero_identificacion,
+        nombre: providente.nombre,
+        telefono: r.telefono || providente.telefono,
+        direccion: r.direccion || providente.direccion,
+        correo: r.correo || providente.correo,
+      }),
+    })
+    cargarProvidentesCheck()
+    msg('✅ Providente actualizado')
   }
 
   const eliminarIngreso = async (id) => {
@@ -675,6 +712,7 @@ function TabMovimientos() {
             concepto: `Donación web · CC ${reporteParaRegistrar.cedula || 's/d'} · ${reporteParaRegistrar.correo || reporteParaRegistrar.telefono || 's/d'}`,
             valor: reporteParaRegistrar.valor,
             providente_otro: reporteParaRegistrar.nombre_donante,
+            cedulaBuscar: reporteParaRegistrar.cedula,
             tipo: 'donacion_servicio',
           }}
           onClose={() => setReporteParaRegistrar(null)}
@@ -696,20 +734,48 @@ function TabMovimientos() {
             {reportesDonacion.length} {reportesDonacion.length === 1 ? 'reporte de donación' : 'reportes de donación'} desde la web sin registrar
           </h4>
           <div className="space-y-2">
-            {reportesDonacion.map(r => (
-              <div key={r.id} className="bg-white border border-amber-200 rounded-lg p-2.5 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{r.nombre_donante} {r.cedula ? `· CC ${r.cedula}` : ''}</p>
-                  <p className="text-xs text-gray-400">
-                    {fmt(r.valor)}{r.telefono ? ` · ${r.telefono}` : ''}{r.correo ? ` · ${r.correo}` : ''}{r.direccion ? ` · ${r.direccion}` : ''}{r.comentario ? ` · ${r.comentario}` : ''}
-                  </p>
+            {reportesDonacion.map(r => {
+              const providente = providentesCheck.find(p => p.numero_identificacion === r.cedula)
+              const camposComparar = [['telefono', 'Teléfono'], ['correo', 'Correo'], ['direccion', 'Dirección']]
+              const diffs = providente ? camposComparar.filter(([k]) => r[k] && r[k] !== providente[k]) : []
+              return (
+                <div key={r.id} className="bg-white border border-amber-200 rounded-lg p-2.5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">{r.nombre_donante} {r.cedula ? `· CC ${r.cedula}` : ''}</p>
+                      <p className="text-xs text-gray-400">
+                        {fmt(r.valor)}{r.telefono ? ` · ${r.telefono}` : ''}{r.correo ? ` · ${r.correo}` : ''}{r.direccion ? ` · ${r.direccion}` : ''}{r.comentario ? ` · ${r.comentario}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <button onClick={() => setReporteParaRegistrar(r)} className="text-xs bg-blue-600 text-white px-2.5 py-1.5 rounded-lg hover:bg-blue-700">Registrar</button>
+                      <button onClick={() => descartarReporte(r.id)} className="text-xs text-gray-400 hover:text-red-500">Descartar</button>
+                    </div>
+                  </div>
+
+                  {!providente && r.cedula && (
+                    <div className="mt-2 pt-2 border-t border-amber-100 flex items-center justify-between gap-3">
+                      <span className="text-xs text-amber-700">🆕 No existe como providente</span>
+                      <button onClick={() => crearProvidenteDesdeReporte(r)} className="text-xs text-green-700 font-medium hover:underline flex-shrink-0">Crear providente</button>
+                    </div>
+                  )}
+
+                  {providente && diffs.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-amber-100">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-xs text-amber-700">⚠️ Datos distintos a los registrados</span>
+                        <button onClick={() => actualizarProvidenteDesdeReporte(providente, r)} className="text-xs text-green-700 font-medium hover:underline flex-shrink-0">Actualizar providente</button>
+                      </div>
+                      <ul className="text-xs text-gray-400 mt-1 space-y-0.5">
+                        {diffs.map(([k, label]) => (
+                          <li key={k}>{label}: {providente[k] || '—'} → <span className="text-gray-700">{r[k]}</span></li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
-                <div className="flex gap-2 flex-shrink-0">
-                  <button onClick={() => setReporteParaRegistrar(r)} className="text-xs bg-blue-600 text-white px-2.5 py-1.5 rounded-lg hover:bg-blue-700">Registrar</button>
-                  <button onClick={() => descartarReporte(r.id)} className="text-xs text-gray-400 hover:text-red-500">Descartar</button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
