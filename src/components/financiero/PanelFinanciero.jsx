@@ -709,7 +709,7 @@ function TabMovimientos() {
         <ModalIngreso
           cuentaDefault="banco"
           prellenado={{
-            concepto: `Donación web · CC ${reporteParaRegistrar.cedula || 's/d'} · ${reporteParaRegistrar.correo || reporteParaRegistrar.telefono || 's/d'}`,
+            concepto: `${reporteParaRegistrar.concepto || 'Donación web'} · CC ${reporteParaRegistrar.cedula || 's/d'} · ${reporteParaRegistrar.correo || reporteParaRegistrar.telefono || 's/d'}`,
             valor: reporteParaRegistrar.valor,
             providente_otro: reporteParaRegistrar.nombre_donante,
             cedulaBuscar: reporteParaRegistrar.cedula,
@@ -744,6 +744,7 @@ function TabMovimientos() {
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-gray-800 truncate">{r.nombre_donante} {r.cedula ? `· CC ${r.cedula}` : ''}</p>
+                      {r.concepto && <p className="text-xs text-blue-600 font-medium">{r.concepto}</p>}
                       <p className="text-xs text-gray-400">
                         {fmt(r.valor)}{r.telefono ? ` · ${r.telefono}` : ''}{r.correo ? ` · ${r.correo}` : ''}{r.direccion ? ` · ${r.direccion}` : ''}{r.comentario ? ` · ${r.comentario}` : ''}
                       </p>
