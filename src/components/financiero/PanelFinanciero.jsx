@@ -672,7 +672,7 @@ function TabMovimientos() {
         <ModalIngreso
           cuentaDefault="banco"
           prellenado={{
-            concepto: `Donación web${reporteParaRegistrar.telefono ? ' - ' + reporteParaRegistrar.telefono : ''}`,
+            concepto: `Donación web · CC ${reporteParaRegistrar.cedula || 's/d'} · ${reporteParaRegistrar.correo || reporteParaRegistrar.telefono || 's/d'}`,
             valor: reporteParaRegistrar.valor,
             providente_otro: reporteParaRegistrar.nombre_donante,
             tipo: 'donacion_servicio',
@@ -699,8 +699,10 @@ function TabMovimientos() {
             {reportesDonacion.map(r => (
               <div key={r.id} className="bg-white border border-amber-200 rounded-lg p-2.5 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{r.nombre_donante}</p>
-                  <p className="text-xs text-gray-400">{fmt(r.valor)}{r.telefono ? ` · ${r.telefono}` : ''}{r.comentario ? ` · ${r.comentario}` : ''}</p>
+                  <p className="text-sm font-medium text-gray-800 truncate">{r.nombre_donante} {r.cedula ? `· CC ${r.cedula}` : ''}</p>
+                  <p className="text-xs text-gray-400">
+                    {fmt(r.valor)}{r.telefono ? ` · ${r.telefono}` : ''}{r.correo ? ` · ${r.correo}` : ''}{r.direccion ? ` · ${r.direccion}` : ''}{r.comentario ? ` · ${r.comentario}` : ''}
+                  </p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
                   <button onClick={() => setReporteParaRegistrar(r)} className="text-xs bg-blue-600 text-white px-2.5 py-1.5 rounded-lg hover:bg-blue-700">Registrar</button>
