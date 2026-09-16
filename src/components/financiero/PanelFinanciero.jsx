@@ -713,6 +713,7 @@ function TabMovimientos() {
             valor: reporteParaRegistrar.valor,
             providente_otro: reporteParaRegistrar.nombre_donante,
             cedulaBuscar: reporteParaRegistrar.cedula,
+            comprobante_url: reporteParaRegistrar.comprobante_url || '',
             tipo: 'donacion_servicio',
           }}
           onClose={() => setReporteParaRegistrar(null)}
@@ -747,7 +748,8 @@ function TabMovimientos() {
                         {fmt(r.valor)}{r.telefono ? ` · ${r.telefono}` : ''}{r.correo ? ` · ${r.correo}` : ''}{r.direccion ? ` · ${r.direccion}` : ''}{r.comentario ? ` · ${r.comentario}` : ''}
                       </p>
                     </div>
-                    <div className="flex gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {r.comprobante_url && <a href={r.comprobante_url} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline">Ver comprobante</a>}
                       <button onClick={() => setReporteParaRegistrar(r)} className="text-xs bg-blue-600 text-white px-2.5 py-1.5 rounded-lg hover:bg-blue-700">Registrar</button>
                       <button onClick={() => descartarReporte(r.id)} className="text-xs text-gray-400 hover:text-red-500">Descartar</button>
                     </div>
