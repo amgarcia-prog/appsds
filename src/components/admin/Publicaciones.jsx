@@ -132,7 +132,7 @@ export default function Publicaciones() {
               className="w-full h-[90px] border border-dashed border-gray-300 rounded flex items-center justify-center cursor-pointer overflow-hidden bg-gray-50"
             >
               {form.imagen_url ? (
-                <img src={form.imagen_url} alt="" className="w-full h-full object-cover" />
+                <img src={form.imagen_url} alt="" className="w-full h-full object-contain" />
               ) : (
                 <span className="text-xs text-gray-400 text-center px-1">{subiendo ? 'Subiendo...' : 'Subir imagen'}</span>
               )}
@@ -205,8 +205,8 @@ export default function Publicaciones() {
             <div className="text-center py-8 text-gray-400 bg-white rounded-lg border border-gray-200">No hay publicaciones</div>
           ) : publicaciones.map(pub => (
             <div key={pub.id} className="flex items-center gap-4 bg-white rounded-lg border border-gray-200 p-3">
-              <div className="w-14 h-14 rounded bg-gray-100 overflow-hidden shrink-0">
-                {pub.imagen_url && <img src={pub.imagen_url} alt="" className="w-full h-full object-cover" />}
+              <div className="w-14 h-14 rounded bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+                {pub.imagen_url && <img src={pub.imagen_url} alt="" className="w-full h-full object-contain" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-800 truncate">{pub.titulo}</p>

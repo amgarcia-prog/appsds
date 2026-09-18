@@ -152,7 +152,7 @@ export default function PanelAdmin() {
               Consejos
             </button>
             <button onClick={() => setVista('publicaciones')}
-              className={`text-sm px-3 py-1.5 rounded-full font-medium transition-colors ${vista === 'publicaciones' ? 'bg-white text-blue-800' : 'bg-orange-400 text-white hover:bg-orange-500'}`}>
+              className={`text-sm ${vista === 'publicaciones' ? 'text-white font-medium' : 'text-blue-200 hover:text-white'}`}>
               Publicaciones
             </button>
             <button onClick={cerrarSesion} className="text-xs text-blue-200 hover:text-white ml-4">
