@@ -61,6 +61,11 @@ export default function LoginMiembro() {
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-red-700 text-sm">{error}</p>
+              {error === 'Número de identificación no encontrado.' && (
+                <a href="/" className="text-blue-700 text-sm font-medium underline block mt-1">
+                  ¿Eres nuevo? Regístrate aquí
+                </a>
+              )}
             </div>
           )}
 
