@@ -10,9 +10,11 @@ export default function Publicaciones() {
   const [editandoId, setEditandoId] = useState(null)
   const [guardando, setGuardando] = useState(false)
   const [subiendo, setSubiendo] = useState(false)
+  const [subiendoDoc, setSubiendoDoc] = useState(false)
   const [mensaje, setMensaje] = useState('')
   const [confirmEliminar, setConfirmEliminar] = useState(null)
   const inputArchivo = useRef(null)
+  const inputDocumento = useRef(null)
 
   useEffect(() => { cargar() }, [])
 
@@ -44,6 +46,21 @@ export default function Publicaciones() {
       else mostrarMensaje('❌ No se pudo subir la imagen')
     } catch { mostrarMensaje('❌ Error subiendo la imagen') }
     setSubiendo(false)
+  }
+
+  const subirDocumento = async (archivo) => {
+    if (!archivo) return
+    setSubiendoDoc(true)
+    try {
+      const fd = new FormData()
+      fd.append('archivo', archivo)
+      fd.append('bucket', 'Publicaciones')
+      fd.append('carpeta', 'documentos')
+      const res = await fetch(`${API_URL}/api/upload`, { method: 'POST', body: fd }).then(r => r.json())
+      if (res.ok) setForm(f => ({ ...f, enlace: res.url }))
+      else mostrarMensaje('❌ No se pudo subir el documento')
+    } catch { mostrarMensaje('❌ Error subiendo el documento') }
+    setSubiendoDoc(false)
   }
 
   const guardar = async () => {
@@ -146,10 +163,23 @@ export default function Publicaciones() {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Enlace (opcional)</label>
-              <input type="text" value={form.enlace}
-                onChange={e => setForm(f => ({ ...f, enlace: e.target.value }))}
-                placeholder="https://..."
-                className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <div className="flex gap-2">
+                <input type="text" value={form.enlace}
+                  onChange={e => setForm(f => ({ ...f, enlace: e.target.value }))}
+                  placeholder="https://... o sube un documento"
+                  className="flex-1 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <button type="button" onClick={() => inputDocumento.current?.click()} disabled={subiendoDoc}
+                  className="shrink-0 border border-gray-300 text-gray-600 px-3 py-1.5 rounded text-xs hover:bg-gray-50 disabled:opacity-50">
+                  {subiendoDoc ? 'Subiendo...' : 'Subir documento'}
+                </button>
+                <input
+                  ref={inputDocumento}
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={e => subirDocumento(e.target.files?.[0])}
+                />
+              </div>
             </div>
           </div>
         </div>
