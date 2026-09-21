@@ -8,6 +8,7 @@ import PuntosServicio from './PuntosServicio'
 import PanelJunta from './PanelJunta'
 import GestionConsejo from './GestionConsejo'
 import Publicaciones from './Publicaciones'
+import LectioServicio from './LectioServicio'
 
 const ESTADOS_PROCESO = [
   'pendiente_formacion',
@@ -155,6 +156,10 @@ export default function PanelAdmin() {
               className={`text-sm ${vista === 'publicaciones' ? 'text-white font-medium' : 'text-blue-200 hover:text-white'}`}>
               Publicaciones
             </button>
+            <button onClick={() => setVista('lectio')}
+              className={`text-sm ${vista === 'lectio' ? 'text-white font-medium' : 'text-blue-200 hover:text-white'}`}>
+              Lectio del Servicio
+            </button>
             <button onClick={cerrarSesion} className="text-xs text-blue-200 hover:text-white ml-4">
               Cerrar sesión
             </button>
@@ -167,7 +172,8 @@ export default function PanelAdmin() {
       {vista === 'junta' && <PanelJunta />}
       {vista === 'consejo' && <GestionConsejo />}
       {vista === 'publicaciones' && <Publicaciones />}
-      {vista !== 'busqueda' && vista !== 'puntos' && vista !== 'junta' && vista !== 'consejo' && vista !== 'publicaciones' && <div className="max-w-7xl mx-auto px-4 py-6">
+      {vista === 'lectio' && <LectioServicio />}
+      {vista !== 'busqueda' && vista !== 'puntos' && vista !== 'junta' && vista !== 'consejo' && vista !== 'publicaciones' && vista !== 'lectio' && <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Estadísticas */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {[

@@ -14,6 +14,7 @@ import PuntosServicio from '../admin/PuntosServicio'
 import GestionConsejo from '../admin/GestionConsejo'
 import PanelCumpleanos from './PanelCumpleanos'
 import PanelPublicaciones from './PanelPublicaciones'
+import PanelLectioServicio from './PanelLectioServicio'
 
 const PAISES = [
   'Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica',
@@ -394,6 +395,12 @@ export default function PanelMiembro() {
                     Publicaciones
                   </button>
                 )}
+                {sesion.roles?.includes('responsable_comunicaciones') && (
+                  <button onClick={() => setPanelTab('lectio')}
+                    className={`text-xs px-3 py-1.5 ${panelTab === 'lectio' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
+                    Lectio del Servicio
+                  </button>
+                )}
                 {datos?.estado_consagracion === 'pilar' && (
                   <button onClick={() => setPanelTab('correos')}
                     className={`text-xs px-3 py-1.5 ${panelTab === 'correos' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
@@ -445,6 +452,7 @@ export default function PanelMiembro() {
       )}
       {panelTab === 'financiero' && <PanelFinanciero />}
       {panelTab === 'publicaciones' && <PanelPublicaciones />}
+      {panelTab === 'lectio' && <PanelLectioServicio />}
 
       {panelTab === 'perfil' && <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Estado del proceso */}
