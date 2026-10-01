@@ -251,7 +251,7 @@ function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco', 
       }
     })
     fetch(`${API_URL}/api/financiero/puntos-servicio`, { headers: H() }).then(r => r.json()).then(d => setPuntos(Array.isArray(d) ? d : []))
-    if (!editando) {
+    if (!editando && (cuentaInicial === 'banco' || cuentaInicial === 'especie')) {
       fetch(`${API_URL}/api/financiero/proximo-recibo`, { headers: H() }).then(r => r.json()).then(d => {
         if (d.proximo) setForm(p => ({ ...p, numero_recibo: String(d.proximo) }))
       })
@@ -281,12 +281,14 @@ function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco', 
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
 
-        <div className="mb-3">
-          <label className="block text-xs text-gray-500 mb-0.5">Número de recibo</label>
-          <input value={form.numero_recibo} onChange={e => setForm(p => ({ ...p, numero_recibo: e.target.value }))}
-            placeholder="Ej: 1770"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
+        {(cuentaInicial === 'banco' || cuentaInicial === 'especie') && (
+          <div className="mb-3">
+            <label className="block text-xs text-gray-500 mb-0.5">Número de recibo</label>
+            <input value={form.numero_recibo} onChange={e => setForm(p => ({ ...p, numero_recibo: e.target.value }))}
+              placeholder="Ej: 1770"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+        )}
 
         <div className="mb-3">
           <label className="block text-xs text-gray-500 mb-0.5">Tipo *</label>
