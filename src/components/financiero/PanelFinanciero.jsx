@@ -944,7 +944,7 @@ function TabMovimientos() {
                           </label>
                         )}
                         {i.comprobante_url && <a href={i.comprobante_url} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline">Ver</a>}
-                        <button onClick={() => cuentaTab === 'banco' ? setModalRecibo(i) : fetch(`${API_URL}/api/financiero/recibo/${i.id}`, { headers: H() }).then(r => r.blob()).then(b => { const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download=`recibo_${i.numero_recibo||i.id.substring(0,8)}.pdf`; a.click(); URL.revokeObjectURL(u) })}
+                        <button onClick={() => (cuentaTab === 'banco' || cuentaTab === 'especie') ? setModalRecibo(i) : fetch(`${API_URL}/api/financiero/recibo/${i.id}`, { headers: H() }).then(r => r.blob()).then(b => { const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download=`recibo_${i.numero_recibo||i.id.substring(0,8)}.pdf`; a.click(); URL.revokeObjectURL(u) })}
                           className="text-xs text-purple-600 hover:text-purple-800 cursor-pointer">PDF</button>
                         <button onClick={() => setEditandoIngreso(i)} className="text-xs text-blue-600 hover:text-blue-800">Editar</button>
                         <button onClick={() => eliminarIngreso(i.id)} className="text-xs text-red-400 hover:text-red-600">Eliminar</button>
