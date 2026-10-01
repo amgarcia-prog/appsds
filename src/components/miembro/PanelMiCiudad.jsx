@@ -114,8 +114,9 @@ export default function PanelMiCiudad() {
   }
 
   const guardarServicio = async () => {
-    const nombre = form.punto_servicio_id === 'otro' ? form.nombreOtro.trim() : form.nombre
-    if (!nombre) return msg('⚠️ El nombre del servicio es obligatorio')
+    const puntoSeleccionado = puntos.find(p => p.id === form.punto_servicio_id)
+    const nombre = form.punto_servicio_id === 'otro' ? form.nombreOtro.trim() : (puntoSeleccionado?.nombre || form.nombre)
+    if (!nombre) return msg('⚠️ Selecciona un punto de servicio o escribe un nombre')
     setGuardandoServicio(true)
     try {
       const body = {
@@ -162,7 +163,7 @@ export default function PanelMiCiudad() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
-      <h2 className="text-xl font-bold text-blue-800 mb-1">Mi Ciudad{ciudad ? `: ${ciudad}` : ''}</h2>
+      <h2 className="text-xl font-bold text-blue-800 mb-1">Ciudad Web{ciudad ? `: ${ciudad}` : ''}</h2>
       <p className="text-xs text-gray-500 mb-4">Lo que escribas aquí aparece en la página pública "Dónde Estamos" de tu ciudad.</p>
 
       {mensaje && <div className="mb-4 text-sm text-center py-2 bg-white border rounded-lg">{mensaje}</div>}

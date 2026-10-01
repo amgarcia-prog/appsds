@@ -405,7 +405,7 @@ export default function PanelMiembro() {
                 {sesion.roles?.includes('responsable_comunicaciones_ciudad') && (
                   <button onClick={() => setPanelTab('mi_ciudad')}
                     className={`text-xs px-3 py-1.5 ${panelTab === 'mi_ciudad' ? 'bg-blue-600 text-white font-medium' : 'text-blue-200 hover:text-white hover:bg-blue-700'}`}>
-                    Mi Ciudad
+                    Ciudad Web
                   </button>
                 )}
                 {datos?.estado_consagracion === 'pilar' && (
