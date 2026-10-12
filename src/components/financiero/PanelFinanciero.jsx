@@ -369,7 +369,7 @@ function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco', 
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
 
-        {form.tipo !== 'costo_financiero' && (
+        {form.tipo !== 'costo_financiero' && cuentaInicial !== 'caja_menor' && cuentaInicial !== 'consumo_caja_menor' && (
           <div className="mb-3">
             <label className="block text-xs text-gray-500 mb-0.5">Benefactor</label>
             <select value={form.providente_id} onChange={e => setForm(p => ({ ...p, providente_id: e.target.value, providente_otro: '' }))}
