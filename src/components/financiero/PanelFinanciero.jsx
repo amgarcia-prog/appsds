@@ -386,14 +386,16 @@ function ModalIngreso({ onClose, onGuardado, editando, cuentaDefault = 'banco', 
           </div>
         )}
 
-        <div className="mb-4">
-          <label className="block text-xs text-gray-500 mb-1">Comprobante</label>
-          <SelectorArchivo
-            url={form.comprobante_url}
-            onChange={url => setForm(p => ({ ...p, comprobante_url: url }))}
-            onError={e => setMensaje('❌ ' + e)}
-          />
-        </div>
+        {cuentaInicial !== 'caja_menor' && (
+          <div className="mb-4">
+            <label className="block text-xs text-gray-500 mb-1">Comprobante</label>
+            <SelectorArchivo
+              url={form.comprobante_url}
+              onChange={url => setForm(p => ({ ...p, comprobante_url: url }))}
+              onError={e => setMensaje('❌ ' + e)}
+            />
+          </div>
+        )}
 
         <div className="flex gap-2">
           <button onClick={guardar} disabled={guardando} className="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50">
