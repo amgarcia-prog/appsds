@@ -4,6 +4,8 @@ import LoginAdmin from './components/admin/LoginAdmin'
 import PanelAdmin from './components/admin/PanelAdmin'
 import RutaProtegida from './components/admin/RutaProtegida'
 import LoginMiembro from './components/miembro/LoginMiembro'
+import OlvideClave from './components/miembro/OlvideClave'
+import RestablecerClave from './components/miembro/RestablecerClave'
 import PanelFormacion from './components/miembro/PanelFormacion'
 import PanelMiembro from './components/miembro/PanelMiembro'
 import RutaProtegidaMiembro from './components/miembro/RutaProtegidaMiembro'
@@ -27,6 +29,8 @@ function App() {
           </RutaProtegida>
         } />
         <Route path="/login" element={<LoginMiembro />} />
+        <Route path="/olvide-clave" element={<OlvideClave />} />
+        <Route path="/restablecer-clave" element={<RestablecerClave />} />
         <Route path="/formacion" element={
           <RutaProtegidaMiembro roles={['responsable_formacion']}>
             <PanelFormacion />

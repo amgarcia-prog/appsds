@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import logo from '../../assets/logo-servidores.jpg'
 import API_URL from '../../config.js'
 
@@ -75,7 +75,11 @@ export default function LoginMiembro() {
           </button>
         </form>
 
-        <p className="text-xs text-center text-gray-400 mt-6">
+        <Link to="/olvide-clave" className="block text-center text-sm text-blue-700 underline mt-4">
+          ¿Olvidaste tu clave?
+        </Link>
+
+        <p className="text-xs text-center text-gray-400 mt-4">
           ¿No tienes clave? Contacta al administrador de tu ciudad.
         </p>
       </div>
